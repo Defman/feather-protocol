@@ -1,0 +1,18 @@
+[package]
+name = "feather-protocol-codegen"
+version = "0.1.0"
+authors = ["caelunshun <caelunshun@gmail.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+anyhow = "1.0"
+thiserror = "1.0"
+heck = "0.3"
+semver = "0.9"
+proc-macro2 = "1.0"
+syn = "1.0"
+quote = "1.0"
+feather-protocol-spec = { path = "../spec" }

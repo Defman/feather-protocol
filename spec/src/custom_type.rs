@@ -1,0 +1,89 @@
+use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
+use std::collections::BTreeMap;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CustomType {
+    Enum {
+        variant: EnumVariant,
+        variants: BTreeMap<VariantKey, CustomType>,
+    },
+    Struct(IndexMap<String, Type>),
+    BitField(IndexMap<String, BitField>),
+    Unit,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BitField {
+    Boolean,
+    I8(u8),
+    U8(u8),
+    I16(u8),
+    U16(u8),
+    I32(u8),
+    U32(u8),
+    I64(u8),
+    U64(u8),
+}
+
+#[derive(Debug, Clone, Eq, Ord, Serialize, Deserialize)]
+pub struct VariantKey(pub Literal, pub String);
+
+impl PartialEq<Self> for VariantKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+
+impl PartialOrd<Self> for VariantKey {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EnumVariant {
+    Key(String),
+    Prefixed(Box<Type>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ArrayLength {
+    RemainingLength,
+    Prefixed(Box<Type>),
+    Key(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Type {
+    Boolean,
+    U8,
+    I8,
+    U16,
+    I16,
+    U32,
+    I32,
+    I64,
+    U64,
+    VarInt,
+    Uuid,
+    String(#[serde(default)] u16),
+    Nbt,
+    Array {
+        schema: Box<Type>,
+        length: ArrayLength,
+    },
+    Option(Box<Type>),
+    CustomType(String, CustomType),
+    Unit,
+    Key(Box<Type>),
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Literal {
+    String(String),
+    Boolean(bool),
+    Int(i64),
+}
