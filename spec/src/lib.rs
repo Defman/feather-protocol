@@ -25,7 +25,7 @@ pub struct Protocol {
     pub packets: BTreeMap<PacketIdentifier, Packet>,
 
     /// Types which are shared across multiple packets.
-    pub shared_types: BTreeMap<SharedTypeId, Type>,
+    pub shared_types: BTreeMap<SharedTypeId, CustomType>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
