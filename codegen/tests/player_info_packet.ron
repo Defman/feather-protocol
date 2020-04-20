@@ -1,42 +1,48 @@
 (
-    name: "player_info",
-    custom_type: Struct({
-        "action": Key(VarInt),
-        "players": Array (
-            length: Prefixed(VarInt),
-            schema: CustomType("player", Struct({
-                "uuid": Uuid,
-                "action": CustomType("action", Enum(
-                    variant: Key("action"),
-                    variants: {
-                        (0, "add_player"): Struct({
-                            "name": String(16),
-                            "properties": Array(
-                                length: Prefixed(VarInt),
-                                schema: CustomType("property", Struct({
-                                    "name": String(32767),
-                                    "value": String(32767),
-                                    "is_signed": Boolean,
-                                    "signature": Option(String(32767)),
-                                })),
-                            ),
-                            "gamemode": VarInt,
-                            "ping": VarInt,
-                            "display_name": Option(String(32767)),
-                        }),
-                        (1, "update_gamemode"): Struct({
-                            "gamemode": VarInt,
-                        }),
-                        (2, "update_latency"): Struct({
-                            "ping": VarInt,
-                        }),
-                        (3, "update_display_name"): Struct({
-                            "display_name": Option(String(32767)),
-                        }),
-                        (4, "remove_player"): Unit,
-                    },
-                )),
-            }))
-        ),
-    })
+    version: 578,
+    packets: (
+        (Client, Play, 52): (
+            name: "player_info",
+            custom_type: Struct({
+                "action": Key(VarInt),
+                "players": Array (
+                    length: Prefixed(VarInt),
+                    schema: CustomType("player", Struct({
+                        "uuid": Uuid,
+                        "action": CustomType("action", Enum(
+                            variant: Key("action"),
+                            variants: {
+                                (0, "add_player"): Struct({
+                                    "name": String(16),
+                                    "properties": Array(
+                                        length: Prefixed(VarInt),
+                                        schema: CustomType("property", Struct({
+                                            "name": String(32767),
+                                            "value": String(32767),
+                                            "is_signed": Boolean,
+                                            "signature": Option(String(32767)),
+                                        })),
+                                    ),
+                                    "gamemode": VarInt,
+                                    "ping": VarInt,
+                                    "display_name": Option(String(32767)),
+                                }),
+                                (1, "update_gamemode"): Struct({
+                                    "gamemode": VarInt,
+                                }),
+                                (2, "update_latency"): Struct({
+                                    "ping": VarInt,
+                                }),
+                                (3, "update_display_name"): Struct({
+                                    "display_name": Option(String(32767)),
+                                }),
+                                (4, "remove_player"): Unit,
+                            },
+                        )),
+                    }))
+                ),
+            })
+        )
+    )
+    shared_custom_types: {}
 )

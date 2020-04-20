@@ -80,7 +80,7 @@ pub enum Type {
     String(#[serde(default)] u16),
     Nbt,
     Array {
-        schema: Box<Type>,
+        custom_type: Box<Type>,
         length: ArrayLength,
     },
     Option(Box<Type>),

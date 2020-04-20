@@ -16,6 +16,18 @@
                 ))
             })
         ),
+        (Server, Play, 0x2A): (
+            name: "animation",
+            custom_type: Struct({
+                "hand": Shared("hand"),
+            }),
+        ),
+        (Server, Play, 0x1B): (
+            name: "spectate",
+            custom_type: Struct({
+                "target_player": Uuid,
+            }),
+        ),
         (Server, Play, 0x2C): (
             name: "player_block_placement",
             custom_type: Struct({
@@ -30,17 +42,28 @@
         )
     },
     shared_types: {
-        "hand": Enum({
+        "hand": Enum(
             variant: Prefixed(VarInt),
             variants: {
                 (0, "main_hand"): Unit,
-                (1: "off_hand"): Unit,
+                (1, "off_hand"): Unit,
             },
-        }),
-        "position": Bitfield({
+        ),
+        "position": BitField({
             "x": I32(26),
             "z": I32(26),
             "y": I16(12),
         }),
+        "face": Enum(
+            variant: Prefixed(VarInt),
+            variants: {
+                (0, "bottom"): Unit,
+                (1, "top"): Unit,
+                (2, "north"): Unit,
+                (3, "south"): Unit,
+                (4, "west"): Unit,
+                (5, "east"): Unit,
+            }
+        )
     },
 )
