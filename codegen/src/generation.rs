@@ -15,16 +15,16 @@ pub struct ProtocolGenerator;
 impl ProtocolGenerator {
     pub fn generate(protocol: Protocol) -> TokenStream {
         let mut packets = protocol.packets;
-        let server_bound_packets = packets.split_off(&PacketIdentifier(PacketDirection::ServerBound, PacketStage::Handshaking, 0.into()));
+        let server_bound_packets = packets.split_off(&PacketIdentifier(PacketDirection::Server, PacketStage::Handshaking, 0.into()));
 
-        let client_bound_packets = packets.split_off(&PacketIdentifier(PacketDirection::ClientBound, PacketStage::Handshaking, 0.into()));
+        let client_bound_packets = packets.split_off(&PacketIdentifier(PacketDirection::Client, PacketStage::Handshaking, 0.into()));
 
         let (client, _, _) = DirectionGenerator::generate(
-            PacketDirection::ServerBound,
+            PacketDirection::Server,
             server_bound_packets,
         );
         let (server, _, _) = DirectionGenerator::generate(
-            PacketDirection::ClientBound,
+            PacketDirection::Client,
             client_bound_packets,
         );
 
@@ -95,8 +95,8 @@ impl DirectionGenerator {
 
     fn ident(direction: PacketDirection) -> Ident {
         match direction {
-            PacketDirection::ClientBound => Ident::new("client_bound", Span::call_site()),
-            PacketDirection::ServerBound => Ident::new("server_bound", Span::call_site()),
+            PacketDirection::Client => Ident::new("client_bound", Span::call_site()),
+            PacketDirection::Server => Ident::new("server_bound", Span::call_site()),
         }
     }
 }
@@ -123,11 +123,11 @@ impl StageGenerator {
             .collect();
 
         let direction = match direction {
-            PacketDirection::ClientBound => {
-                quote! { feather_protocol::PacketDirection::ClientBound }
+            PacketDirection::Client => {
+                quote! { feather_protocol::PacketDirection::Client }
             }
-            PacketDirection::ServerBound => {
-                quote! { feather_protocol::PacketDirection::ServerBound }
+            PacketDirection::Server => {
+                quote! { feather_protocol::PacketDirection::Server }
             }
         };
 
@@ -182,11 +182,11 @@ impl PacketGenerator {
         let name_lit = LitStr::new(&*packet.name, Span::call_site());
 
         let direction = match identifier.direction() {
-            PacketDirection::ClientBound => {
-                quote! { feather_protocol::PacketDirection::ClientBound }
+            PacketDirection::Client => {
+                quote! { feather_protocol::PacketDirection::Client }
             }
-            PacketDirection::ServerBound => {
-                quote! { feather_protocol::PacketDirection::ServerBound }
+            PacketDirection::Server => {
+                quote! { feather_protocol::PacketDirection::Server }
             }
         };
 

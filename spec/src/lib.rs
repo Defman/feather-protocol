@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+pub use indexmap::IndexMap;
+
 mod primitives;
 pub use primitives::*;
 

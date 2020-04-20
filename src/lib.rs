@@ -2,7 +2,6 @@ mod network;
 mod error;
 mod message;
 mod packets;
-mod provider;
 pub mod types;
 
 pub use error::Error;

@@ -10,8 +10,8 @@ pub enum PacketStage {
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum PacketDirection {
-    ClientBound = 0,
-    ServerBound = 1,
+    Client = 0,
+    Server = 1,
 }
 
 macro_rules! wrap {

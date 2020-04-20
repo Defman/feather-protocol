@@ -9,7 +9,7 @@ fn player_info_packet() -> Result<()> {
     let packet_de: Packet = ron::de::from_bytes(packet_bytes)?;
     
     let packet_identifier = PacketIdentifier {
-        direction: PacketDirection::ClientBound,
+        direction: PacketDirection::Client,
         stage: PacketStage::Play,
         id: 0.into(),
     };

@@ -1,7 +1,7 @@
 (
     version: 578,
     packets: {
-        (ServerBound, Handshaking, 0): (
+        (Server, Handshaking, 0x00): (
             name: "handshake",
             custom_type: Struct({
                 "protocol_version": VarInt,
@@ -15,8 +15,12 @@
                     }
                 ))
             })
+        ),
+        (Server, Play, 0x2C): (
+            "hand": Shared("hand"),
         )
     },
-    asd
-    shared_types: {}
+    shared_types: {
+        
+    }
 )
