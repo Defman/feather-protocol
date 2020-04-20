@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum PacketStage {

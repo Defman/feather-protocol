@@ -6,21 +6,12 @@ edition = "2018"
 
 [dependencies]
 bytes = "0.5"
-smallbox = "0.8"
 thiserror = "1.0"
 anyhow = "1.0"
 uuid = "0.8"
 hematite-nbt = "0.4"
 feather-protocol-codegen = { path = "./codegen" }
 serde = "1.0"
-tokio-util = { version = "0.3", features = ["codec"] }
-tokio = { version = "0.2", features = ["io-util", "tcp"] }
-aes = "0.3"
-cfb8 = "0.3"
-flate2 = { version = "1.0", features = ["tokio"] }
-sharded-slab = "0.0.9"
-futures = "0.3"
-pin-project = "0.4"
 
 [workspace]
 members = [".", "codegen", "spec", "extractor"]

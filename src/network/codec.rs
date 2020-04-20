@@ -1,21 +1,12 @@
 use crate::types::{self, TryReadFrom, TryReadInto, VarInt, WriteFrom, WriteInto};
-use aes::Aes128;
 use anyhow::bail;
 use bytes::{
     Buf, BytesMut,
 };
-use cfb8::stream_cipher::{StreamCipher};
-use cfb8::Cfb8;
-use flate2::{
-    Compress, CompressError, Compression, Decompress, DecompressError, FlushCompress,
-    FlushDecompress,
-};
+
 use std::marker::PhantomData;
-use tokio_util::codec::{Decoder, Encoder};
 
 pub use crate::packets::*;
-
-type AesCfb8 = Cfb8<Aes128>;
 
 pub trait Side: Sized + 'static {}
 pub struct ServerSide;

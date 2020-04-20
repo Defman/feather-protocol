@@ -1,6 +1,5 @@
 use std::fs;
 use std::env;
-use std::io::Read;
 use anyhow::{Result, anyhow};
 use feather_protocol_spec::Protocol;
 
