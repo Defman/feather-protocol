@@ -26,7 +26,7 @@
 		(Client, Status, 0x01): (
             name: "pong",
             custom_type: Struct({
-                "payload": U8,
+                "payload": I64,
             })
         ),
 		(Server, Status, 0x00): (
@@ -49,22 +49,20 @@
             name: "encryption_request",
             custom_type: Struct({
                 "server_id": String(20),
-				"public_key_lenght": VarInt,
 				"public_key": Array(
-                    type: I8,
-                    length: Prefixed(VarInt)
+                    length: Prefixed(VarInt),
+                    type: U8,
                 ),
-				"verify_token_length": VarInt,
 				"verify_token": Array(
-                    type: I8,
-                    length: Prefixed(VarInt)
+                    length: Prefixed(VarInt),
+                    type: U8,
                 ),
             })
         ),
 		(Client, Login, 0x02): (
             name: "login_success",
             custom_type: Struct({
-                "uuid": Uuid,
+                "uuid": String(36),
 				"username": String(16),
             })
         ),
@@ -80,8 +78,8 @@
                 "message_id": VarInt,
 				"channel": Shared("identifier"),
 				"data": Array(
-                    type: I8,
-                    length: Prefixed(VarInt)
+                    type: U8,
+                    length: RemainingLength,
                 ),
             })
         ),
@@ -94,15 +92,13 @@
         (Server, Login, 0x01): (
             name: "encryption_response",
             custom_type: Struct({
-                "shared_secret_length": VarInt,
                 "shared_secret": Array(
-                    type: I8,
-                    length: Prefixed(VarInt)
+                    length: Prefixed(VarInt),
+                    type: U8,
                 ),
-                "verify_token_length": VarInt,
                 "verify_token": Array(
-                    type: I8,
-                    length: Prefixed(VarInt)
+                    length: Prefixed(VarInt),
+                    type: U8,
                 ),
             })
         ),
@@ -112,61 +108,43 @@
                 "message_id": VarInt,
                 "successful": Boolean,
                 "data": Option(Array(
-                    type: I8,
-                    length: Prefixed(VarInt)
+                    type: U8,
+                    length: RemainingLength,
                 ),),
             })
         ),
-        (Client, Play, 0x04): (
-            name: "spawn_painting",
-            custom_type: Struct({
-                "entity_id": VarInt,
-                "entity_uuid": Uuid,
-                "motive": VarInt,
-                "location": Shared("position"),
-                "direction": CustomType("direction", Enum(
-                    variant: Prefixed(U8),
-                    variants: {
-                        (0, "south"): Unit,
-                        (1, "west"): Unit,
-                        (2, "north"): Unit,
-                        (3, "east"): Unit,
-                    },
-                )),
-            })
-        ),
-        (Client, Play, 0): (
+        (Client, Play, 0x00): (
             name: "spawn_entity",
             custom_type: Struct({
-                "entity_id": VarInt,
+                "entity_id": Shared("entity_id"),
                 "object_uuid": Uuid,
-                "yype": VarInt,
+                "type": VarInt,
                 "x": F64,
                 "y": F64,
                 "z": F64,
-                "pitch": U8, // Pay attention to the angle confusion between Java and Wiki.vg
+                "pitch": U8,
                 "yaw": U8,
                 "data": I32,
-                "velocity_x": I16, // Probably fine as u16
+                "velocity_x": I16,
                 "velocity_y": I16,
                 "velocity_z": I16,
             })
         ),
-        (Client, Play, 1): (
+        (Client, Play, 0x01): (
             name: "spawn_experience_orb",
             custom_type: Struct({
-                "entity_id": VarInt,
+                "entity_id": Shared("entity_id"),
                 "x": F64,
                 "y": F64,
                 "z": F64,
-                "count": I16, // Probably fine as u16
+                "count": I16,
             })
         ),
-        (Client, Play, 2): (
+        (Client, Play, 0x02): (
             name: "spawn_weather_entity",
             custom_type: Struct({
-                "entity_id": VarInt,
-                "type": CustomType("type",Enum(
+                "entity_id": Shared("entity_id"),
+                "type": CustomType("type", Enum(
                     variant: Prefixed(VarInt),
                     variants: {
                         (1, "thunderbolt"): Unit,
@@ -177,10 +155,10 @@
                 "z": F64
             })
         ),
-        (Client, Play, 3): (
+        (Client, Play, 0x03): (
             name: "spawn_living_entity",
             custom_type: Struct({
-                "entity_id": VarInt,
+                "entity_id": Shared("entity_id"),
                 "entity_uuid": Uuid,
                 "type": VarInt,
                 "x": F64,
@@ -194,23 +172,81 @@
                 "velocity_z": I16
             })
         ),
-        (Client, Play, 5): (
+        (Client, Play, 0x04): (
+            name: "spawn_painting",
+            custom_type: Struct({
+                "entity_id": Shared("entity_id"),
+                "entity_uuid": Uuid,
+                "motive": CustomType("motive", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "kebab"): Unit,
+                        (1, "aztec"): Unit,
+                        (2, "alban"): Unit,
+                        (3, "aztec2"): Unit,
+                        (4, "bomb"): Unit,
+                        (5, "plant"): Unit,
+                        (6, "wasteland"): Unit,
+                        (7, "pool"): Unit,
+                        (8, "courbet"): Unit,
+                        (9, "sea"): Unit,
+                        (10, "sunset"): Unit,
+                        (11, "creebet"): Unit,
+                        (12, "wanderer"): Unit,
+                        (13, "graham"): Unit,
+                        (14, "match"): Unit,
+                        (15, "bust"): Unit,
+                        (16, "stage"): Unit,
+                        (17, "void"): Unit,
+                        (18, "skull_and_roses"): Unit,
+                        (19, "wither"): Unit,
+                        (20, "fighters"): Unit,
+                        (21, "pointer"): Unit,
+                        (22, "pigscene"): Unit,
+                        (23, "burning_skull"): Unit,
+                        (24, "skeleton"): Unit,
+                        (25, "donkey_kong"): Unit,
+                    }
+                )),
+                "location": Shared("position"),
+                "direction": CustomType("direction", Enum(
+                    variant: Prefixed(U8),
+                    variants: {
+                        (0, "south"): Unit,
+                        (1, "west"): Unit,
+                        (2, "north"): Unit,
+                        (3, "east"): Unit,
+                    },
+                )),
+            })
+        ),
+        (Client, Play, 0x05): (
             name: "spawn_player",
             custom_type: Struct({
-                "entity_id": VarInt,
+                "entity_id": Shared("entity_id"),
                 "player_uuid": Uuid,
                 "x": F64,
                 "y": F64,
                 "z": F64,
-                "yaw": U16,
-                "pitch": U16
+                "yaw": U8,
+                "pitch": U8
             })
         ),
-        (Client, Play, 6): (
+        (Client, Play, 0x06): (
             name: "entity_animation",
             custom_type: Struct({
-                "entity_id": VarInt,
-                "animation": U8
+                "entity_id": Shared("entity_id"),
+                "animation": CustomType("animation", Enum(
+                    variant: Prefixed(U8),
+                    variants: {
+                        (0, "swing_main_arm"): Unit,
+                        (1, "take_damage"): Unit,
+                        (2, "leave_bed"): Unit,
+                        (3, "swing_offhand"): Unit,
+                        (4, "critical_effect"): Unit,
+                        (5, "magic_critical_effect"): Unit,
+                    }
+                ))
             })
         ),
         (Server, Play, 0x28): (
