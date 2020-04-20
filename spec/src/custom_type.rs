@@ -12,6 +12,11 @@ pub enum CustomType {
     },
     Struct(IndexMap<FieldName, Type>),
     BitField(IndexMap<String, BitField>),
+    BitFlags {
+        #[serde(rename = "type")]
+        kind: Box<Type>,
+        flags: IndexMap<u64, String>,
+    },
     Unit,
 }
 
@@ -76,6 +81,7 @@ pub enum Type {
     F32,
     F64,
     VarInt,
+    VarLong,
     Uuid,
     String(#[serde(default)] u16),
     Nbt,

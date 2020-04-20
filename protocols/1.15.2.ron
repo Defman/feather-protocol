@@ -249,6 +249,142 @@
                 ))
             })
         ),
+        (Client, Play, 0x07): (
+            name: "statistics",
+            custom_type: Struct({
+                "statistics": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("statistic", Struct({
+                        "category_id": VarInt,
+                        "statistic_id": VarInt,
+                    }))
+                ),
+                "value": VarInt,
+            })
+        ),
+        (Client, Play, 0x08): (
+            name: "acknowledge_player_digging",
+            custom_type: Struct({
+                "location": Shared("position"),
+                "block": VarInt,
+                "status": CustomType("status", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "started_digging"): Unit,
+                        (1, "cancelled_digging"): Unit,
+                        (2, "finished_digging"): Unit,
+                    }
+                )),
+                "successful": Boolean
+            })
+        ),
+        (Client, Play, 0x09): (
+            name: "block_break_animation",
+            custom_type: Struct({
+                "entity_id": Shared("entity_id"),
+                "location": Shared("position"),
+                "destroy_stage": I8
+            })
+        ),
+        (Client, Play, 0x0A): (
+            name: "block_entity_data",
+            custom_type: Struct({
+                "location": Shared("position"),
+                "action": U8, // TODO
+                "nbt_data": Shared("nbt_tag")
+            })
+        ),
+        (Client, Play, 0x0B): (
+            name: "block_action",
+            custom_type: Struct({
+                "location": Shared("position"),
+                "action_id": U8,
+                "action_param": U8,
+                "block_type": VarInt
+            })
+        ),
+        (Client, Play, 0x0C): (
+            name: "block_change",
+            custom_type: Struct({
+                "location": Shared("position"),
+                "block_id": VarInt,
+            })
+        ),
+        (Client, Play, 0x0D): (
+            name: "boss_bar",
+            custom_type: Struct({
+                "uuid": Uuid,
+                "action": CustomType("action", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "add"): Struct({
+                            "title": Shared("chat"),
+                            "health": F32,
+                            "color": Shared("color"),
+                            "division": Shared("division"),
+                            "flags": CustomType("flags", BitFlags(
+                                type: U8,
+                                flags: {
+                                    0x01: "darken_sky",
+                                    0x02: "dragon_bar",
+                                    0x04: "create_fog",
+                                }
+                            )),
+                        }),
+                        (1, "remove"): Unit,
+                        (2, "update_health"): Struct({
+                            "health": F32,
+                        }),
+                        (3, "update_title"): Struct({
+                            "title": Shared("chat"),
+                        }),
+                        (4, "update_style"): Struct({
+                            "color": Shared("color"),
+                            "dividers": Shared("division"),
+                        }),
+                        (5, "update_flags"): Struct({
+                            "flags": U8, // TODO
+                        }),
+                    }
+                )),
+            })
+        ),
+        (Client, Play, 0x0E): (
+            name: "server_difficulty",
+            custom_type: Struct({
+                "difficulty": Shared("difficulty"), //TODO: 0: peaceful, 1: easy, 2: normal, 3: hard
+                "difficulty_locked": Boolean,
+            })
+        ),
+        (Client, Play, 0x0F): (
+            name: "chat_message",
+            custom_type: Struct({
+                "json_data": Shared("chat"),
+                "position": CustomType("position", Enum(
+                    variant: Prefixed(I8),
+                    variants: {
+                        (0, "chat"): Unit,
+                        (1, "system_message"): Unit,
+                        (2, "game_info"): Unit,
+                    }
+                )),
+            })
+        ),
+        (Client, Play, 0x10): (
+            name: "multi_block_change",
+            custom_type: Struct({
+                "chunk_x": I32,
+                "chunk_z": I32,
+                "record": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("record", Struct({
+                        "horizontal_position": U8,
+                        "y_coordinate": U8,
+                        "block_id": VarInt,
+                    }))
+                )
+            })
+        ),
         (Server, Play, 0x28): (
             name: "update_structure_block",
             custom_type: Struct({
@@ -294,6 +430,17 @@
                         (2, "clockwise_180"): Unit,
                         (3, "counter_clockwise_90"): Unit,
                     }
+                )),
+                "metadata": String(0),
+                "integrity": F32,
+                "seed": VarLong,
+                "flags": CustomType("flags", BitFlags(
+                    type: U8,
+                    flags: {
+                        0x01: "ignore_entities",
+                        0x02: "show_air",
+                        0x04: "show_bounding_box",
+                    }
                 ))
             })
         ),
@@ -330,6 +477,12 @@
                 "cursor_position_z": F32,
                 "inside_block": Boolean,
             })
+        ),
+        (Server, Play, 0x2D): (
+            name: "use item",
+            custom_type: Struct({
+                "hand": Shared("hand")
+            }),
         )
     },
     shared_types: {
