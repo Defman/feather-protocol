@@ -15,17 +15,9 @@ pub struct ProtocolGenerator;
 impl ProtocolGenerator {
     pub fn generate(protocol: Protocol) -> TokenStream {
         let mut packets = protocol.packets;
-        let server_bound_packets = packets.split_off(&PacketIdentifier {
-            direction: PacketDirection::ServerBound,
-            stage: PacketStage::Handshaking,
-            id: 0.into(),
-        });
+        let server_bound_packets = packets.split_off(&PacketIdentifier(PacketDirection::ServerBound, PacketStage::Handshaking, 0.into()));
 
-        let client_bound_packets = packets.split_off(&PacketIdentifier {
-            direction: PacketDirection::ClientBound,
-            stage: PacketStage::Handshaking,
-            id: 0.into(),
-        });
+        let client_bound_packets = packets.split_off(&PacketIdentifier(PacketDirection::ClientBound, PacketStage::Handshaking, 0.into()));
 
         let (client, _, _) = DirectionGenerator::generate(
             PacketDirection::ServerBound,
@@ -54,29 +46,29 @@ impl DirectionGenerator {
     ) -> (TokenStream, (Ident, Ident, Ident, Ident), Ident) {
         let direction_ident = Self::ident(direction);
 
-        let play_packets = packets.split_off(&PacketIdentifier {
-            direction: direction,
-            stage: PacketStage::Play,
-            id: 0.into(),
-        });
+        let play_packets = packets.split_off(&PacketIdentifier(
+            direction,
+            PacketStage::Play,
+            0.into(),
+        ));
 
-        let login_packets = packets.split_off(&PacketIdentifier {
-            direction: direction,
-            stage: PacketStage::Login,
-            id: 0.into(),
-        });
+        let login_packets = packets.split_off(&PacketIdentifier(
+            direction,
+            PacketStage::Login,
+            0.into(),
+        ));
 
-        let status_packets = packets.split_off(&PacketIdentifier {
-            direction: direction,
-            stage: PacketStage::Status,
-            id: 0.into(),
-        });
+        let status_packets = packets.split_off(&PacketIdentifier(
+            direction,
+            PacketStage::Status,
+            0.into(),
+        ));
 
-        let handshaking_packets = packets.split_off(&PacketIdentifier {
-            direction: direction,
-            stage: PacketStage::Handshaking,
-            id: 0.into(),
-        });
+        let handshaking_packets = packets.split_off(&PacketIdentifier(
+            direction,
+            PacketStage::Handshaking,
+            0.into(),
+        ));
 
         let (handshaking, handshaking_ident) = StageGenerator::generate(
             direction,
@@ -186,10 +178,10 @@ impl PacketGenerator {
         let ident = Ident::new(&format!("{}_packet", *packet.name), Span::call_site());
         let (custom_type, custom_type_ident) = CustomTypeGenerator::generate("packet", &packet.custom_type);
 
-        let id_lit = LitInt::new(&identifier.id.to_string(), Span::call_site());
+        let id_lit = LitInt::new(&identifier.id().to_string(), Span::call_site());
         let name_lit = LitStr::new(&*packet.name, Span::call_site());
 
-        let direction = match identifier.direction {
+        let direction = match identifier.direction() {
             PacketDirection::ClientBound => {
                 quote! { feather_protocol::PacketDirection::ClientBound }
             }
@@ -198,7 +190,7 @@ impl PacketGenerator {
             }
         };
 
-        let stage = match identifier.stage {
+        let stage = match identifier.stage() {
             PacketStage::Handshaking => quote! { feather_protocol::PacketStage::Handshaking },
             PacketStage::Status => quote! { feather_protocol::PacketStage::Status },
             PacketStage::Login => quote! { feather_protocol::PacketStage::Login },

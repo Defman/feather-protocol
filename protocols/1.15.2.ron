@@ -1,0 +1,21 @@
+(
+    version: 578,
+    packets: {
+        (ServerBound, Handshaking, 0): (
+            name: "handshake",
+            custom_type: Struct({
+                "protocol_version": VarInt,
+                "server_address": String(255),
+                "server_port": U16,
+                "next_state": CustomType("state", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (1, "status"): Unit,
+                        (2, "login"): Unit,
+                    }
+                ))
+            })
+        )
+    },
+    shared_types: {}
+)

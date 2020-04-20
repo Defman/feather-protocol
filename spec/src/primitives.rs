@@ -32,7 +32,7 @@ macro_rules! wrap {
     };
 }
 
-#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct PacketId(u64);
 
@@ -44,7 +44,7 @@ pub struct PacketName(String);
 #[serde(transparent)]
 pub struct MinecraftVersion(String);
 
-#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct ProtocolVersion(u64);
 
@@ -71,8 +71,18 @@ wrap!(FieldName, String);
 
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PacketIdentifier {
-    pub direction: PacketDirection,
-    pub stage: PacketStage,
-    pub id: PacketId,
+pub struct PacketIdentifier(pub PacketDirection, pub PacketStage, pub PacketId);
+
+impl PacketIdentifier {
+    pub fn direction(&self) -> PacketDirection {
+        self.0
+    }
+
+    pub fn stage(&self) -> PacketStage {
+        self.1
+    }
+    
+    pub fn id(&self) -> PacketId {
+        self.2
+    }
 }
