@@ -22,10 +22,16 @@ pub struct Protocol {
     /// The set of all packets defined for this protocol.
     ///
     /// Keys in this map are (packet_direction, packet_stage, packet_id, packet_name).
-    pub packets: BTreeMap<PacketIdentifier, CustomType>,
+    pub packets: BTreeMap<PacketIdentifier, Packet>,
 
     /// Types which are shared across multiple packets.
     pub shared_types: BTreeMap<SharedTypeId, Type>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Packet {
+    pub name: PacketName,
+    pub custom_type: CustomType,
 }
 
 #[cfg(test)]
@@ -92,19 +98,19 @@ mod tests {
             variant: EnumVariant::Prefixed(Box::new(Type::VarInt)),
             variants: {
                 let mut variants = BTreeMap::new();
-                variants.insert(VariantKey(Literal::Int(0), "enter_combat".to_owned()), CustomType::Unit);
-                variants.insert(VariantKey(Literal::Int(1), "end_combat".to_owned()), CustomType::Struct({
+                variants.insert(VariantKey(Literal::Int(0), "enter_combat".to_owned().into()), CustomType::Unit);
+                variants.insert(VariantKey(Literal::Int(1), "end_combat".to_owned().into()), CustomType::Struct({
                     let mut fields = IndexMap::new();
-                    fields.insert("duration".to_owned(), Type::VarInt);
-                    fields.insert("entity_id".to_owned(), Type::I32);
+                    fields.insert("duration".to_owned().into(), Type::VarInt);
+                    fields.insert("entity_id".to_owned().into(), Type::I32);
                     fields
                 }));
-                variants.insert(VariantKey(Literal::Int(2), "entity_dead".to_owned()), CustomType::Struct({
+                variants.insert(VariantKey(Literal::Int(2), "entity_dead".to_owned().into()), CustomType::Struct({
                     let mut fields = IndexMap::new();
-                    fields.insert("player_id".to_owned(), Type::VarInt);
-                    fields.insert("entity_id".to_owned(), Type::I32);
-                    fields.insert("message".to_owned(), Type::String(32767));
-                    fields
+                        fields.insert("player_id".to_owned().into(), Type::VarInt);
+                        fields.insert("entity_id".to_owned().into(), Type::I32);
+                        fields.insert("message".to_owned().into(), Type::String(32767));
+                        fields
                 }));
                 variants
             }
@@ -113,8 +119,6 @@ mod tests {
         let combat_packet_ser = ron::ser::to_string_pretty(&combat_packet, Default::default())?;
 
         println!("{}", combat_packet_ser);
-
-        panic!();
 
         Ok(())
     }

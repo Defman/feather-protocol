@@ -4,6 +4,7 @@
 // use syn::{parse_macro_input, LitStr};
 
 mod generation;
+pub use generation::*;
 
 // #[proc_macro]
 // pub fn feather_protocol(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

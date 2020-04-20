@@ -3,16 +3,16 @@ use std::cmp::Ordering;
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum PacketStage {
-    Handshaking,
-    Status,
-    Login,
-    Play,
+    Handshaking = 0,
+    Status = 1,
+    Login = 2,
+    Play = 3,
 }
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Copy, Serialize, Deserialize)]
 pub enum PacketDirection {
-    ServerBound,
-    ClientBound,
+    ClientBound = 0,
+    ServerBound = 1,
 }
 
 macro_rules! wrap {
@@ -21,6 +21,12 @@ macro_rules! wrap {
             type Target = $inner;
             fn deref(&self) -> &Self::Target {
                 &self.0
+            }
+        }
+
+        impl From<$inner> for $outer {
+            fn from(inner: $inner) -> Self {
+                Self(inner)
             }
         }
     };
@@ -46,35 +52,27 @@ pub struct ProtocolVersion(u64);
 #[serde(transparent)]
 pub struct SharedTypeId(String);
 
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct VariantName(String);
+
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[serde(transparent)]
+pub struct FieldName(String);
+
+
 wrap!(PacketId, u64);
 wrap!(PacketName, String);
 wrap!(MinecraftVersion, String);
 wrap!(ProtocolVersion, u64);
 wrap!(SharedTypeId, String);
+wrap!(VariantName, String);
+wrap!(FieldName, String);
 
 
-#[derive(Debug, Clone, Ord, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PacketIdentifier {
-    pub stage: PacketStage,
     pub direction: PacketDirection,
+    pub stage: PacketStage,
     pub id: PacketId,
-    pub name: PacketName,
-}
-
-impl PartialEq<Self> for PacketIdentifier {
-    fn eq(&self, other: &Self) -> bool {
-        self.stage.eq(&other.stage) && self.direction.eq(&other.direction) && self.id.eq(&other.id)
-    }
-}
-
-impl PartialOrd<Self> for PacketIdentifier {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(
-            self.stage.cmp(&other.stage).then(
-                self.direction
-                    .cmp(&other.direction)
-                    .then(self.id.cmp(&other.id)),
-            ),
-        )
-    }
 }

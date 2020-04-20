@@ -1,7 +1,8 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::cmp::Ordering;
+use crate::primitives::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CustomType {
@@ -9,9 +10,30 @@ pub enum CustomType {
         variant: EnumVariant,
         variants: BTreeMap<VariantKey, CustomType>,
     },
-    Struct(IndexMap<String, Type>),
+    Struct(IndexMap<FieldName, Type>),
     BitField(IndexMap<String, BitField>),
     Unit,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Variant {
+    pub name: VariantName,
+    pub custom_type: CustomType,
+}
+
+#[derive(Debug, Clone, Eq, Ord, Serialize, Deserialize)]
+pub struct VariantKey(pub Literal, pub VariantName);
+
+impl PartialEq<Self> for VariantKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+
+impl PartialOrd<Self> for VariantKey {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -25,21 +47,6 @@ pub enum BitField {
     U32(u8),
     I64(u8),
     U64(u8),
-}
-
-#[derive(Debug, Clone, Eq, Ord, Serialize, Deserialize)]
-pub struct VariantKey(pub Literal, pub String);
-
-impl PartialEq<Self> for VariantKey {
-    fn eq(&self, other: &Self) -> bool {
-        self.0.eq(&other.0)
-    }
-}
-
-impl PartialOrd<Self> for VariantKey {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.0.partial_cmp(&other.0)
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -64,8 +71,8 @@ pub enum Type {
     I16,
     U32,
     I32,
-    I64,
     U64,
+    I64,
     VarInt,
     Uuid,
     String(#[serde(default)] u16),
@@ -76,7 +83,6 @@ pub enum Type {
     },
     Option(Box<Type>),
     CustomType(String, CustomType),
-    Unit,
     Key(Box<Type>),
 }
 

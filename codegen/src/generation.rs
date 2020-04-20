@@ -2,494 +2,377 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{LitInt, LitStr};
 
+use indexmap::IndexMap;
 use std::collections::BTreeMap;
 
-use feather_protocol_spec::{Minecraft, Protocol, PacketDirection, PacketStage, PacketId, CustomType};
+use feather_protocol_spec::{
+    CustomType, EnumVariant, FieldName, Literal, Minecraft, Packet, PacketDirection, PacketId,
+    PacketIdentifier, PacketStage, Protocol, Type, VariantKey,
+};
 
-pub struct Generator {
-    client_bound: DirectionGenerator,
-    server_bound: DirectionGenerator,
+pub struct ProtocolGenerator;
+
+impl ProtocolGenerator {
+    pub fn generate(protocol: Protocol) -> TokenStream {
+        let mut packets = protocol.packets;
+        let server_bound_packets = packets.split_off(&PacketIdentifier {
+            direction: PacketDirection::ServerBound,
+            stage: PacketStage::Handshaking,
+            id: 0.into(),
+        });
+
+        let client_bound_packets = packets.split_off(&PacketIdentifier {
+            direction: PacketDirection::ClientBound,
+            stage: PacketStage::Handshaking,
+            id: 0.into(),
+        });
+
+        let (client, _, _) = DirectionGenerator::generate(
+            PacketDirection::ServerBound,
+            server_bound_packets,
+        );
+        let (server, _, _) = DirectionGenerator::generate(
+            PacketDirection::ClientBound,
+            client_bound_packets,
+        );
+
+        quote! {
+            mod protocol {
+                #client
+                #server
+            }
+        }
+    }
 }
 
-pub struct DirectionGenerator {
-    direction: PacketDirection,
-    handshaking: StageGenerator,
-    status: StageGenerator,
-    login: StageGenerator,
-    play: StageGenerator,
-}
+struct DirectionGenerator;
 
-pub struct StageGenerator {
-    stage: PacketStage,
-    packets: BTreeMap<PacketId, CustomType>,
-}
+impl DirectionGenerator {
+    fn generate(
+        direction: PacketDirection,
+        mut packets: BTreeMap<PacketIdentifier, Packet>,
+    ) -> (TokenStream, (Ident, Ident, Ident, Ident), Ident) {
+        let direction_ident = Self::ident(direction);
 
-impl Generator {
-    pub fn new(minecraft: Minecraft) {
-        minecraft
+        let play_packets = packets.split_off(&PacketIdentifier {
+            direction: direction,
+            stage: PacketStage::Play,
+            id: 0.into(),
+        });
+
+        let login_packets = packets.split_off(&PacketIdentifier {
+            direction: direction,
+            stage: PacketStage::Login,
+            id: 0.into(),
+        });
+
+        let status_packets = packets.split_off(&PacketIdentifier {
+            direction: direction,
+            stage: PacketStage::Status,
+            id: 0.into(),
+        });
+
+        let handshaking_packets = packets.split_off(&PacketIdentifier {
+            direction: direction,
+            stage: PacketStage::Handshaking,
+            id: 0.into(),
+        });
+
+        let (handshaking, handshaking_ident) = StageGenerator::generate(
+            direction,
+            PacketStage::Handshaking,
+            handshaking_packets,
+        );
+        let (status, status_ident) = StageGenerator::generate(direction, PacketStage::Handshaking, login_packets);
+        let (login, login_ident) = StageGenerator::generate(direction, PacketStage::Handshaking, status_packets);
+        let (play, play_ident) = StageGenerator::generate(direction, PacketStage::Handshaking, play_packets);
+
+        (
+            quote! {
+                pub mod #direction_ident {
+                    #handshaking
+                    #status
+                    #login
+                    #play
+                }
+            },
+            (handshaking_ident, status_ident, login_ident, play_ident),
+            direction_ident,
+        )
     }
 
-    pub fn generate(&self) {
-
+    fn ident(direction: PacketDirection) -> Ident {
+        match direction {
+            PacketDirection::ClientBound => Ident::new("client_bound", Span::call_site()),
+            PacketDirection::ServerBound => Ident::new("server_bound", Span::call_site()),
+        }
     }
 }
 
+struct StageGenerator;
 
-// pub fn generate(protocol: Protocol) -> TokenStream {
-//     let packets: Vec<Packet> = protocol
-//         .packets
-//         .into_iter()
-//         .map(|(_, packet)| packet)
-//         .collect();
+impl StageGenerator {
+    pub fn generate(
+        direction: PacketDirection,
+        stage: PacketStage,
+        packets: BTreeMap<PacketIdentifier, Packet>,
+    ) -> (TokenStream, Ident) {
+        let stage_ident = Self::ident(stage);
 
-//     let (client_bound_packets, server_bound_packets) = packets
-//         .into_iter()
-//         .partition(|packet| packet.direction == PacketDirection::ToClient);
-//     let server = generate_direction(PacketDirection::ToServer, server_bound_packets);
-//     let client = generate_direction(PacketDirection::ToClient, client_bound_packets);
+        let (packet_tokens, packets_idents): (Vec<_>, Vec<_>) = packets
+            .iter()
+            .map(|(identifier, packet)| PacketGenerator::generate(identifier, packet))
+            .unzip();
 
-//     let version = protocol.protocol_version;
-//     let minecraft_version = protocol.minecraft_version;
-//     let minecraft_major_version = protocol.minecraft_major_version;
+        let packet_names: Vec<_> = packets
+            .iter()
+            .map(|(_, p)| &p.name)
+            .map(|name| Ident::new(name, Span::call_site()))
+            .collect();
 
-//     quote! {
-//         pub struct Protocol;
-//         impl crate::packets::Protocol for Protocol
-//         {
-//             type ServerBoundHandshakePacket = server_bound::handshake::Packet;
-//             type ClientBoundHandshakePacket = client_bound::handshake::Packet;
-//             type ServerBoundStatusPacket = server_bound::status::Packet;
-//             type ClientBoundStatusPacket = client_bound::status::Packet;
-//             type ServerBoundLoginPacket = server_bound::login::Packet;
-//             type ClientBoundLoginPacket = client_bound::login::Packet;
-//             type ServerBoundPlayPacket = server_bound::play::Packet;
-//             type ClientBoundPlayPacket = client_bound::play::Packet;
+        let direction = match direction {
+            PacketDirection::ClientBound => {
+                quote! { feather_protocol::PacketDirection::ClientBound }
+            }
+            PacketDirection::ServerBound => {
+                quote! { feather_protocol::PacketDirection::ServerBound }
+            }
+        };
 
-//             fn version() -> u64 {
-//                 #version
-//             }
+        let stage = match stage {
+            PacketStage::Handshaking => quote! { feather_protocol::PacketStage::Handshaking },
+            PacketStage::Status => quote! { feather_protocol::PacketStage::Status },
+            PacketStage::Login => quote! { feather_protocol::PacketStage::Login },
+            PacketStage::Play => quote! { feather_protocol::PacketStage::Play },
+        };
 
-//             fn minecraft_version() -> &'static str {
-//                 #minecraft_version
-//             }
+        (
+            quote! {
+                pub mod #stage_ident {
+                    pub enum Packet {
+                        #(#packet_names(#packets_idents))*
+                    }
 
-//             fn minecraft_major_version() -> &'static str {
-//                 #minecraft_major_version
-//             }
-//         }
+                    impl feather_protocol::Packet for #stage_ident {
+                        type Direction = #direction;
+                        type Stage = #stage;
 
-//         pub enum Packet {
-//             ServerBound(server_bound::Packet),
-//             ClientBound(client_bound::Packet)
-//         }
+                        fn id(&self) -> u64 {
 
-//         impl Packet {
-//             pub fn id(&self) -> u32 {
-//                 // match self {
-//                 //     Packet::ServerBound(packet) => crate::packets::Packet::id(packet),
-//                 //     Packet::ClientBound(packet) => crate::packets::Packet::id(packet),
-//                 // }
-//                 unimplemented!()
-//             }
+                        }
+                    }
 
-//             pub fn name(&self) -> &'static str {
-//                 // match self {
-//                 //     Packet::ServerBound(packet) => crate::packets::Packet::name(packet),
-//                 //     Packet::ClientBound(packet) => crate::packets::Packet::name(packet),
-//                 // }
-//                 unimplemented!()
-//             }
-//         }
+                    #(#packet_tokens)*
+                }
+            },
+            stage_ident,
+        )
+    }
 
-//         impl From<server_bound::Packet> for Packet {
-//             fn from(packet: server_bound::Packet) -> Self {
-//                 Packet::ServerBound(packet)
-//             }
-//         }
+    fn ident(stage: PacketStage) -> Ident {
+        match stage {
+            PacketStage::Handshaking => Ident::new("handshaking", Span::call_site()),
+            PacketStage::Status => Ident::new("handshaking", Span::call_site()),
+            PacketStage::Login => Ident::new("handshaking", Span::call_site()),
+            PacketStage::Play => Ident::new("handshaking", Span::call_site()),
+        }
+    }
+}
 
-//         impl From<client_bound::Packet> for Packet {
-//             fn from(packet: client_bound::Packet) -> Self {
-//                 Packet::ClientBound(packet)
-//             }
-//         }
+pub struct PacketGenerator;
 
-//         impl crate::types::TryReadFrom for Packet {
-//             fn try_read(buf: &mut impl bytes::Buf) -> Result<Self, crate::types::Error> {
-//                 unimplemented!()
-//             }
-//         }
+impl PacketGenerator {
+    pub fn generate(identifier: &PacketIdentifier, packet: &Packet) -> (TokenStream, Ident) {
+        let ident = Ident::new(&format!("{}_packet", *packet.name), Span::call_site());
+        let (custom_type, custom_type_ident) = CustomTypeGenerator::generate("packet", &packet.custom_type);
 
-//         impl crate::types::WriteInto for Packet {
-//             fn write(&self, buf: &mut impl bytes::BufMut) -> usize {
-//                 unimplemented!()
-//             }
-//         }
+        let id_lit = LitInt::new(&identifier.id.to_string(), Span::call_site());
+        let name_lit = LitStr::new(&*packet.name, Span::call_site());
 
-//         #server
-//         #client
-//     }
-// }
+        let direction = match identifier.direction {
+            PacketDirection::ClientBound => {
+                quote! { feather_protocol::PacketDirection::ClientBound }
+            }
+            PacketDirection::ServerBound => {
+                quote! { feather_protocol::PacketDirection::ServerBound }
+            }
+        };
 
-// fn generate_direction(direction: PacketDirection, packets: Vec<Packet>) -> TokenStream {
-//     let side = ident(match direction {
-//         PacketDirection::ToServer => "server_bound",
-//         PacketDirection::ToClient => "client_bound",
-//     });
+        let stage = match identifier.stage {
+            PacketStage::Handshaking => quote! { feather_protocol::PacketStage::Handshaking },
+            PacketStage::Status => quote! { feather_protocol::PacketStage::Status },
+            PacketStage::Login => quote! { feather_protocol::PacketStage::Login },
+            PacketStage::Play => quote! { feather_protocol::PacketStage::Play },
+        };
 
-//     let handshake_packets: Vec<_> = packets
-//         .iter()
-//         .filter(|packet| packet.category == PacketCategory::Handshake)
-//         .collect();
-//     let login_packets: Vec<_> = packets
-//         .iter()
-//         .filter(|packet| packet.category == PacketCategory::Login)
-//         .collect();
-//     let play_packets: Vec<_> = packets
-//         .iter()
-//         .filter(|packet| packet.category == PacketCategory::Play)
-//         .collect();
-//     let status_packets: Vec<_> = packets
-//         .iter()
-//         .filter(|packet| packet.category == PacketCategory::Status)
-//         .collect();
+        let serialization = PacketSerilizationGenerator::generate(&identifier, &packet);
+        (
+            quote! {
+                pub mod #ident {
+                    #custom_type
 
-//     let status = generate_enum(direction, PacketCategory::Status, status_packets);
-//     let login = generate_enum(direction, PacketCategory::Login, login_packets);
-//     let play = generate_enum(direction, PacketCategory::Play, play_packets);
-//     let handshake = generate_enum(direction, PacketCategory::Handshake, handshake_packets);
+                    impl feather_protocol::Packet for #custom_type_ident {
+                        type Direction = #direction;
+                        type Stage = #stage;
 
-//     quote! {
-//         pub mod #side {
-//             pub enum Packet {
-//                 Handshake(handshake::Packet),
-//                 Status(status::Packet),
-//                 Login(login::Packet),
-//                 Play(play::Packet),
-//             }
+                        fn id(&self) -> u64 {
+                            #id_lit
+                        }
 
-//             impl Packet {
-//                 pub fn id(&self) -> u32 {
-//                     // match self {
-//                     //     Packet::Handshake(packet) => crate::packets::Packet::id(packet),
-//                     //     Packet::Status(packet) => crate::packets::Packet::id(packet),
-//                     //     Packet::Login(packet) => crate::packets::Packet::id(packet),
-//                     //     Packet::Play(packet) => crate::packets::Packet::id(packet),
-//                     // }
-//                     unimplemented!()
-//                 }
+                        fn name(&self) -> &'static str {
+                            #name_lit
+                        }
+                    }
 
-//                 pub fn name(&self) -> &'static str {
-//                     // match self {
-//                     //     Packet::Handshake(packet) => crate::packets::Packet::name(packet),
-//                     //     Packet::Status(packet) => crate::packets::Packet::name(packet),
-//                     //     Packet::Login(packet) => crate::packets::Packet::name(packet),
-//                     //     Packet::Play(packet) => crate::packets::Packet::name(packet),
-//                     // }
-//                     unimplemented!()
-//                 }
-//             }
+                    #serialization
+                }
+            },
+            custom_type_ident,
+        )
+    }
+}
 
-//             impl crate::types::TryReadFrom for Packet {
-//                 fn try_read(buf: &mut impl bytes::buf::Buf) -> Result<Self, crate::types::Error> {
-//                     unimplemented!()
-//                 }
-//             }
+pub struct PacketSerilizationGenerator;
 
-//             impl crate::types::WriteInto for Packet {
-//                 fn write(&self, buf: &mut impl bytes::buf::BufMut) -> usize {
-//                     unimplemented!()
-//                 }
-//             }
+impl PacketSerilizationGenerator {
+    pub fn generate(identifier: &PacketIdentifier, packet: &Packet) -> TokenStream {
+        quote! {}
+    }
 
-//             #handshake
-//             #status
-//             #login
-//             #play
-//         }
-//     }
-// }
+    fn generate_read(&self) -> TokenStream {
+        quote! {}
+    }
+}
 
-// fn generate_enum(
-//     direction: PacketDirection,
-//     category: PacketCategory,
-//     packets: Vec<&Packet>,
-// ) -> TokenStream {
-//     let state = ident(match category {
-//         PacketCategory::Handshake => "handshake",
-//         PacketCategory::Status => "status",
-//         PacketCategory::Login => "login",
-//         PacketCategory::Play => "play",
-//     });
+struct CustomTypeGenerator;
 
-//     let (packets, packet_names): (Vec<TokenStream>, Vec<Ident>) =
-//         packets.into_iter().map(generate_packet).unzip();
+impl CustomTypeGenerator {
+    pub fn generate(name: &str, custom_type: &CustomType) -> (TokenStream, Ident) {
+        match custom_type {
+            CustomType::Struct(fields) => Self::generate_struct(name, fields),
+            CustomType::Enum { variant, variants } => Self::generate_enum(name, variants),
+            CustomType::Unit => Self::generate_unit(name),
+            CustomType::BitField(_) => (quote! {}, Self::ident(name)),
+        }
+    }
 
-//     let bound = match direction {
-//         PacketDirection::ToServer => quote! { crate::packets::ServerBound },
-//         PacketDirection::ToClient => quote! { crate::packets::ClientBound },
-//     };
+    fn ident(name: &str) -> Ident {
+        use heck::CamelCase;
+        Ident::new(&name.to_camel_case(), Span::call_site())
+    }
 
-//     let stage = match category {
-//         PacketCategory::Handshake => quote! { crate::packets::HandshakeStage },
-//         PacketCategory::Status => quote! { crate::packets::StatusStage },
-//         PacketCategory::Login => quote! { crate::packets::LoginStage },
-//         PacketCategory::Play => quote! { crate::packets::PlayStage },
-//     };
+    fn generate_struct(name: &str, fields: &IndexMap<FieldName, Type>) -> (TokenStream, Ident) {
+        use heck::SnakeCase;
 
-//     quote! {
-//         pub mod #state {
-//             pub enum Packet {
-//                 #(
-//                     #packet_names(#packet_names)
-//                 ),*
-//             }
+        let custom_type_ident = Self::ident(name);
+        let (field_names, field_types): (Vec<_>, Vec<_>) = fields
+            .iter()
+            .filter(|(_, ty)| !matches!(ty, Type::Key(_)))
+            .map(|(name, ty)| {
+                (
+                    Ident::new(&name.to_snake_case(), Span::call_site()),
+                    TypeGenerator::generate(ty),
+                )
+            })
+            .unzip();
 
-//             impl crate::packets::Packet for Packet {
-//                 type Direction = #bound;
-//                 type Stage = #stage;
+        let (filed_type_tokens, field_type_idents): (Vec<_>, Vec<_>) =
+            field_types.into_iter().unzip();
+        (
+            quote! {
+                pub struct #custom_type_ident {
+                    #(#field_names: #field_type_idents),*
+                }
 
-//                 fn id(&self) -> u32 {
-//                     match self {
-//                         #(
-//                             Packet::#packet_names(packet) => packet.id()
-//                         ),*
-//                     }
-//                 }
+                #(#filed_type_tokens)*
+            },
+            custom_type_ident,
+        )
+    }
 
-//                 fn name(&self) -> &'static str {
-//                     match self {
-//                         #(
-//                             Packet::#packet_names(packet) => packet.name()
-//                         ),*
-//                     }
-//                 }
-//             }
+    fn generate_enum(
+        name: &str,
+        variants: &BTreeMap<VariantKey, CustomType>,
+    ) -> (TokenStream, Ident) {
+        use heck::CamelCase;
 
-//             impl crate::types::TryReadFrom for Packet {
-//                 fn try_read(buf: &mut impl bytes::buf::Buf) -> Result<Self, crate::types::Error> {
-//                     unimplemented!()
-//                 }
-//             }
+        let custom_type_ident = Self::ident(name);
 
-//             impl crate::types::WriteInto for Packet {
-//                 fn write(&self, buf: &mut impl bytes::buf::BufMut) -> usize {
-//                     unimplemented!()
-//                 }
-//             }
+        let (variant_custom_type_tokens, variant_idents): (Vec<_>, Vec<_>) = variants
+            .iter()
+            .map(|(key, ty)| {
+                let ident = Ident::new(&key.1.to_camel_case(), Span::call_site());
+                match ty {
+                    CustomType::Unit => (quote! {}, quote! { #ident }),
+                    ty => {
+                        let (custom_type_tokens, ty_ident) =
+                            CustomTypeGenerator::generate(&key.1, ty);
+                        (
+                            custom_type_tokens,
+                            quote! {
+                                #ident(#ty_ident)
+                            },
+                        )
+                    }
+                }
+            })
+            .unzip();
 
-//             #(
-//                 #packets
-//             )*
-//         }
-//     }
-// }
+        (
+            quote! {
+                pub enum #custom_type_ident {
+                    #(#variant_idents),*
+                }
 
-// fn generate_packet(packet: &Packet) -> (TokenStream, Ident) {
-//     let packet_name: Ident = ident(&packet.name);
-//     let packet_id: LitInt = LitInt::new(&packet.id.to_string(), Span::call_site());
-//     let packet_identifier: LitStr = LitStr::new(&packet.identifier, Span::call_site());
-//     let packet_fields_names: Vec<Ident> = packet.fields.keys().map(|k| ident(k)).collect();
-//     let packet_fields_types: Vec<TokenStream> = packet
-//         .fields
-//         .values()
-//         .map(|ty| tokenize_field_type(ty))
-//         .collect();
+                #(#variant_custom_type_tokens)*
+            },
+            custom_type_ident,
+        )
+    }
 
-//     let read_packet = read_packet(packet);
+    fn generate_unit(name: &str) -> (TokenStream, Ident) {
+        let custom_type_ident = Self::ident(name);
 
-//     let bound = match packet.direction {
-//         PacketDirection::ToServer => quote! { crate::packets::ServerBound },
-//         PacketDirection::ToClient => quote! { crate::packets::ClientBound },
-//     };
+        (
+            quote! {
+                pub struct #custom_type_ident;
+            },
+            custom_type_ident,
+        )
+    }
+}
 
-//     let stage = match packet.category {
-//         PacketCategory::Handshake => quote! { crate::packets::HandshakeStage },
-//         PacketCategory::Status => quote! { crate::packets::StatusStage },
-//         PacketCategory::Login => quote! { crate::packets::LoginStage },
-//         PacketCategory::Play => quote! { crate::packets::PlayStage },
-//     };
+pub struct TypeGenerator;
 
-//     (
-//         quote! {
-//             pub struct #packet_name {
-//                 #(
-//                     pub #packet_fields_names: #packet_fields_types
-//                 ),*
-//             }
-
-//             impl crate::packets::Packet for #packet_name {
-//                 type Direction = #bound;
-//                 type Stage = #stage;
-
-//                 fn id(&self) -> u32 {
-//                     #packet_id
-//                 }
-
-//                 fn name(&self) -> &'static str {
-//                     #packet_identifier
-//                 }
-//             }
-
-//             #read_packet
-
-//             impl crate::types::WriteInto for #packet_name {
-//                 fn write(&self, buf: &mut impl bytes::buf::BufMut) -> usize {
-//                     // use crate::types::WriteInto;
-//                     // let mut total = 0;
-//                     // #(
-//                     //     total += self.#packet_fields_names.write(buf);
-//                     // )*
-//                     // total
-//                     unimplemented!()
-//                 }
-//             }
-//         },
-//         packet_name,
-//     )
-// }
-
-// fn read_packet(packet: &Packet) -> TokenStream {
-//     let packet_name: Ident = ident(&packet.name);
-
-//     let read_fields: Vec<TokenStream> = packet
-//         .fields
-//         .iter()
-//         .map(|(name, ty)| read_field(name, ty))
-//         .collect();
-
-//     let packet_fields_names: Vec<Ident> = packet.fields.keys().map(|k| ident(k)).collect();
-
-//     quote! {
-//         impl crate::types::TryReadFrom for #packet_name {
-//             fn try_read(buf: &mut impl bytes::buf::Buf) -> Result<Self, crate::types::Error> {
-//                 #(
-//                     #read_fields
-//                 )*
-
-//                 Ok(Self {
-//                     #(
-//                         #packet_fields_names
-//                     ),*
-//                 })
-//             }
-//         }
-//     }
-// }
-
-// fn write_packet(packet: &Packet) -> TokenStream {
-//     unimplemented!();
-// }
-
-// fn read_field(name: &FieldName, ty: &FieldType) -> TokenStream {
-//     let name = ident(name);
-//     let kind = tokenize_field_type(ty);
-
-//     match ty {
-//         FieldType::Uuid
-//         | FieldType::Varint
-//         | FieldType::U8
-//         | FieldType::U16
-//         | FieldType::I8
-//         | FieldType::I16
-//         | FieldType::I32
-//         | FieldType::I64
-//         | FieldType::F32
-//         | FieldType::F64
-//         | FieldType::Bool => quote! { 
-//             let #name: #kind = crate::types::TryReadFrom::try_read(buf)?; },
-//         FieldType::Switch {
-//             compare_to,
-//             fields,
-//         } => {
-//             let compare_to = ident(compare_to);
-//             let fields: Vec<TokenStream> = fields.iter().map(|(name, ty)| read_field(name, ty)).collect();
-//             quote! { }
-//         },
-//         FieldType::Bitfield {
-//             fields
-//         } => {
-//             let field_names: Vec<Ident> = fields.keys().map(|k| ident(k)).collect();
-//             let field_sizes: Vec<u32> = fields.values().map(|(size, _)| size).copied().collect();
-//             let field_offsets: Vec<u32> = field_sizes
-//                 .iter()
-//                 .scan(0, |acc, size| {
-//                     let offset = acc.clone();
-//                     *acc += size;
-//                     Some(offset)
-//                 })
-//                 .collect();
-//             let signed: Vec<TokenStream> = fields.values().map(|(_, signed)| if *signed {
-//                     quote! {
-//                         as i64
-//                     }
-//                 } else {
-//                     quote! {
-//                         as i32
-//                     }
-//                 }).collect();
-//             quote! {
-//                 let val: u64 = buf.try_read()?;
-//                 #(
-//                     let #field_names = ((val & (std::u64::MAX >> (64 - size) << (64 - size - offset))) >> (64 - size - offset)) #signed;
-//                 )*
-//             }
-//         }
-//         _ => quote! { },
-//     }
-// }
-
-// // 0b110100
-// // 0b111111 >> 
-
-// fn tokenize_field_type(ty: &FieldType) -> TokenStream {
-//     match ty {
-//         FieldType::Uuid => quote! { uuid::Uuid },
-//         FieldType::Varint => quote! { crate::types::VarInt },
-//         FieldType::U8 => quote! { u8 },
-//         FieldType::U16 => quote! { u16 },
-//         FieldType::I8 => quote! { i8 },
-//         FieldType::I16 => quote! { i16 },
-//         FieldType::I32 => quote! { i32 },
-//         FieldType::I64 => quote! { i64 },
-//         FieldType::F32 => quote! { f32 },
-//         FieldType::F64 => quote! { f64 },
-//         FieldType::Bool => quote! { bool },
-//         FieldType::Mapper { mappings } => quote! { () },
-//         FieldType::Pstring { .. } => quote! { String },
-//         FieldType::Buffer => quote! { Vec<u8> },
-//         FieldType::Option { of } => {
-//             let inner = tokenize_field_type(of);
-//             quote! { Option<#inner> }
-//         }
-//         FieldType::EntityMetadataLoop { .. } => quote! { std::collections::BTreeMap<u8, ()> },
-//         FieldType::Bitfield { fields } => {
-//             let names: Vec<Ident> = fields.keys().map(ident).collect();
-//             let types: Vec<TokenStream> fields.values().map(|(_, signed)| if signed { quote! { i64 } } else { quote! { u64 } });
-//             quote! { 
-                
-//             }
-//         },
-//         FieldType::Container { .. } => quote! { () },
-//         FieldType::Switch {
-//             compare_to: _,
-//             fields: _,
-//         } => quote! { u8 },
-//         FieldType::Void => quote! { u8 },
-//         FieldType::Array {
-//             count_type: _,
-//             of: _,
-//         } => quote! { u8 },
-//         FieldType::RestBuffer => quote! { u8 },
-//         FieldType::OptionalNbt => quote! { crate::types::Nbt<nbt::Blob> },
-//         FieldType::Nbt => quote! { crate::types::Nbt<nbt::Blob> },
-//         FieldType::Custom { name: _ } => quote! { u8 },
-//     }
-// }
-
-// fn ident(s: impl AsRef<str>) -> Ident {
-//     let ident = match s.as_ref() {
-//         "type" => "kind",
-//         ident => ident,
-//     };
-//     Ident::new(ident, Span::call_site())
-// }
+impl TypeGenerator {
+    pub fn generate(ty: &Type) -> (TokenStream, TokenStream) {
+        match ty {
+            Type::Boolean => (quote! {}, quote! { bool }),
+            Type::U8 => (quote! {}, quote! { u8 }),
+            Type::I8 => (quote! {}, quote! { i8 }),
+            Type::U16 => (quote! {}, quote! { u16 }),
+            Type::I16 => (quote! {}, quote! { i16 }),
+            Type::U32 => (quote! {}, quote! { u32 }),
+            Type::I32 => (quote! {}, quote! { i32 }),
+            Type::U64 => (quote! {}, quote! { u64 }),
+            Type::I64 => (quote! {}, quote! { i64 }),
+            Type::VarInt => (quote! {}, quote! { VarInt }),
+            Type::Uuid => (quote! {}, quote! { uuid::Uuid }),
+            Type::String(_) => (quote! {}, quote! { String }),
+            Type::Nbt => (quote! {}, quote! { () }),
+            Type::Array { schema, .. } => {
+                let (tokens, ident) = TypeGenerator::generate(schema);
+                (tokens, quote! { Vec<#ident> })
+            }
+            Type::Option(inner) => {
+                let (tokens, ident) = TypeGenerator::generate(inner);
+                (tokens, quote! { Option<#ident> })
+            }
+            Type::CustomType(name, custom_type) => {
+                let (tokens, ident) = CustomTypeGenerator::generate(name, custom_type);
+                (quote! { #tokens }, quote! { #ident })
+            }
+            Type::Key(_) => (quote! { () }, quote! {}),
+        }
+    }
+}
