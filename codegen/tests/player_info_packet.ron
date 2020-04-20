@@ -7,7 +7,7 @@
                 "action": Key(VarInt),
                 "players": Array (
                     length: Prefixed(VarInt),
-                    schema: CustomType("player", Struct({
+                    type: CustomType("player", Struct({
                         "uuid": Uuid,
                         "action": CustomType("action", Enum(
                             variant: Key("action"),
@@ -16,7 +16,7 @@
                                     "name": String(16),
                                     "properties": Array(
                                         length: Prefixed(VarInt),
-                                        schema: CustomType("property", Struct({
+                                        type: CustomType("property", Struct({
                                             "name": String(32767),
                                             "value": String(32767),
                                             "is_signed": Boolean,
