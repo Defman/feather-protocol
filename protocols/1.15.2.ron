@@ -17,10 +17,30 @@
             })
         ),
         (Server, Play, 0x2C): (
-            "hand": Shared("hand"),
+            name: "player_block_placement",
+            custom_type: Struct({
+                "hand": Shared("hand"),
+                "location": Shared("position"),
+                "face": Shared("face"),
+                "cursor_position_x": F32,
+                "cursor_position_y": F32,
+                "cursor_position_z": F32,
+                "inside_block": Boolean,
+            })
         )
     },
     shared_types: {
-        
-    }
+        "hand": Enum({
+            variant: Prefixed(VarInt),
+            variants: {
+                (0, "main_hand"): Unit,
+                (1: "off_hand"): Unit,
+            },
+        }),
+        "position": Bitfield({
+            "x": I32(26),
+            "z": I32(26),
+            "y": I16(12),
+        }),
+    },
 )

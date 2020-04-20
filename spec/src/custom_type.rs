@@ -73,6 +73,8 @@ pub enum Type {
     I32,
     U64,
     I64,
+    F32,
+    F64,
     VarInt,
     Uuid,
     String(#[serde(default)] u16),
@@ -84,6 +86,7 @@ pub enum Type {
     Option(Box<Type>),
     CustomType(String, CustomType),
     Key(Box<Type>),
+    Shared(SharedTypeId),
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
