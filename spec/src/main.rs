@@ -1,7 +1,7 @@
 use std::fs;
 use std::env;
 use anyhow::{Result, anyhow};
-use feather_protocol_spec::Protocol;
+use feather_protocol_spec::{Protocol, Validation};
 
 fn main() -> Result<()> {
     verify()?;
@@ -15,10 +15,10 @@ fn verify() -> Result<()> {
         .ok_or(anyhow!("Specify a file path to verify."))?;
     let file = fs::File::open(&path)?;
 
-    let _: Protocol = ron::de::from_reader(file)
+    let protocol: Protocol = ron::de::from_reader(file)
         .map_err(|e| anyhow!("{}", e))?;
 
-    println!("Its all good");
+    protocol.validate()?;
 
     Ok(())
 }

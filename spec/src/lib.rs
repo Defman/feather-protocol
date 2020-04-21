@@ -9,6 +9,9 @@ pub use primitives::*;
 mod custom_type;
 pub use custom_type::*;
 
+mod validation;
+pub use validation::*;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Minecraft {
     pub version: MinecraftVersion,
