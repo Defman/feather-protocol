@@ -286,6 +286,21 @@
                 "destroy_stage": I8
             })
         ),
+        (Client, Play, 0x10): (
+            name: "multi_block_change",
+            custom_type: Struct({
+                "chunk_x": I32,
+                "chunk_z": I32,
+                "record": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("record", Struct({
+                        "horizontal_position": U8,
+                        "y_coordinate": U8,
+                        "block_id": VarInt,
+                    }))
+                )
+            })
+        ),
         (Client, Play, 0x0A): (
             name: "block_entity_data",
             custom_type: Struct({
@@ -370,19 +385,63 @@
                 )),
             })
         ),
-        (Client, Play, 0x10): (
-            name: "multi_block_change",
+        (Server, Play, 0x22): (
+            name: "set_beacon_effect",
             custom_type: Struct({
-                "chunk_x": I32,
-                "chunk_z": I32,
-                "record": Array(
-                    length: Prefixed(VarInt),
-                    type: CustomType("record", Struct({
-                        "horizontal_position": U8,
-                        "y_coordinate": U8,
-                        "block_id": VarInt,
-                    }))
-                )
+                "primary_effect": VarInt,
+                "secondary_effect": VarInt,
+            })
+        ),
+        (Server, Play, 0x23): (
+            name: "held_item_change",
+            custom_type: Struct({
+                "slot": I16,
+            })
+        ),
+        (Server, Play, 0x24): (
+            name: "update_command_block",
+            custom_type: Struct({
+                "location": Shared("position"),
+                "command": String(32767),
+                "mode": CustomType("mode", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "sequence"): Unit,
+                        (1, "auto"): Unit,
+                        (2, "redstone"): Unit,
+                    }
+                )),
+                "flags": CustomType("flags", BitFlags(
+                    type: I8, 
+                    flags: {
+                    0x01: "track_output",
+                    0x02: "is_conditional",
+                    0x04: "automatic",
+                }))
+            })
+        ),
+        (Server, Play, 0x25): (
+            name: "creative_inventory_action",
+            custom_type: Struct({
+                "entity_id": Shared("entity_id"),
+                "command": String(0),
+                "tract_output": Boolean,
+            })
+        ),
+        (Server, Play, 0x26): (
+            name: "creative_inventory_action",
+            custom_type: Struct({
+                "slot": I16,
+                "clicked_item": Shared("slot"),
+            })
+        ),
+        (Server, Play, 0x27): (
+            name: "update_jigsaw_block",
+            custom_type: Struct({
+                "location": Shared("position"),
+                "attachment_type": Shared("identifier"),
+                "target_pool": Shared("identifier"),
+                "final_state": String(0),
             })
         ),
         (Server, Play, 0x28): (
@@ -507,6 +566,17 @@
                 (3, "south"): Unit,
                 (4, "west"): Unit,
                 (5, "east"): Unit,
+            }
+        ),
+        "slot": Enum(
+            variant: Prefixed(Boolean),
+            variants: {
+                (true, "item"): Struct({
+                    "id": VarInt,
+                    "count": VarInt,
+                    "nbt": Nbt, 
+                }),
+                (false, "empty"): Unit,
             }
         )
     },
