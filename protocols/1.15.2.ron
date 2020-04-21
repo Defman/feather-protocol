@@ -767,7 +767,7 @@
             })
         ),
         (Server, Play, 0x13): (
-            name: "player rotation",
+            name: "player_rotation",
             custom_type: Struct({
                 "yaw": F32,
                 "pitch": F32,
@@ -781,7 +781,7 @@
             })
         ),
         (Server, Play, 0x15): (
-            name: "vehicle Move",
+            name: "vehicle_move",
             custom_type: Struct({
                 "x": F64,
                 "y": F64,
@@ -1105,7 +1105,7 @@
             })
         ),
         (Server, Play, 0x2D): (
-            name: "use item",
+            name: "use_item",
             custom_type: Struct({
                 "hand": Shared("hand")
             }),

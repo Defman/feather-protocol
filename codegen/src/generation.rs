@@ -175,7 +175,8 @@ pub struct PacketGenerator;
 
 impl PacketGenerator {
     pub fn generate(identifier: &PacketIdentifier, packet: &Packet) -> (TokenStream, Ident) {
-        let ident = Ident::new(&format!("{}_packet", *packet.name), Span::call_site());
+        use heck::SnakeCase;
+        let ident = Ident::new(&format!("{}_packet", &*packet.name.to_snake_case()), Span::call_site());
         let (custom_type, custom_type_ident) = CustomTypeGenerator::generate("packet", &packet.custom_type);
 
         let id_lit = LitInt::new(&identifier.id().to_string(), Span::call_site());
@@ -245,6 +246,11 @@ impl CustomTypeGenerator {
             CustomType::Enum { variant, variants } => Self::generate_enum(name, variants),
             CustomType::Unit => Self::generate_unit(name),
             CustomType::BitField(_) => (quote! {}, Self::ident(name)),
+            CustomType::BitFlags { .. } => (quote! {
+                bitflags! {
+
+                }
+            }, Self::ident(name))
         }
     }
 
@@ -261,8 +267,13 @@ impl CustomTypeGenerator {
             .iter()
             .filter(|(_, ty)| !matches!(ty, Type::Key(_)))
             .map(|(name, ty)| {
+                let name = name.to_snake_case();
+                let name = match &name {
+                    "type" => "kind".to_owned(),
+                    name => name,
+                };
                 (
-                    Ident::new(&name.to_snake_case(), Span::call_site()),
+                    Ident::new(&name, Span::call_site()),
                     TypeGenerator::generate(ty),
                 )
             })
@@ -348,23 +359,32 @@ impl TypeGenerator {
             Type::I32 => (quote! {}, quote! { i32 }),
             Type::U64 => (quote! {}, quote! { u64 }),
             Type::I64 => (quote! {}, quote! { i64 }),
+            Type::F32 => (quote! {}, quote! { f32 }),
+            Type::F64 => (quote! {}, quote! { f64 }),
             Type::VarInt => (quote! {}, quote! { VarInt }),
+            Type::VarLong => (quote! {}, quote! { VarLong }),
             Type::Uuid => (quote! {}, quote! { uuid::Uuid }),
             Type::String(_) => (quote! {}, quote! { String }),
             Type::Nbt => (quote! {}, quote! { () }),
             Type::Array { kind, .. } => {
-                let (tokens, ident) = TypeGenerator::generate(kind);
+                let (tokens, ident) = TypeGenerator::generate(kind.as_ref());
                 (tokens, quote! { Vec<#ident> })
             }
             Type::Option(inner) => {
-                let (tokens, ident) = TypeGenerator::generate(inner);
+                let (tokens, ident) = TypeGenerator::generate(inner.as_ref());
                 (tokens, quote! { Option<#ident> })
             }
             Type::CustomType(name, custom_type) => {
-                let (tokens, ident) = CustomTypeGenerator::generate(name, custom_type);
+                let (tokens, ident) = CustomTypeGenerator::generate(name.as_ref(), &custom_type);
                 (quote! { #tokens }, quote! { #ident })
             }
-            Type::Key(_) => (quote! { () }, quote! {}),
+            Type::Constant(_) => (quote! { }, quote! {}),
+            Type::Key(_) => (quote! { }, quote! {}),
+            Type::Shared(name) => {
+                use heck::SnakeCase;
+                let name = Ident::new(&name.to_snake_case(), Span::call_site());                
+                (quote! {}, quote! { shared::#name })
+            }
         }
     }
 }

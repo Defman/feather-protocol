@@ -1,22 +1,16 @@
 use anyhow::Result;
-use feather_protocol_spec::{PacketIdentifier, PacketDirection, PacketStage, Packet};
-use feather_protocol_codegen::PacketGenerator;
+use feather_protocol_spec::Protocol;
+use feather_protocol_codegen::ProtocolGenerator;
 
 #[test]
 fn player_info_packet() -> Result<()> {
-    let packet_bytes = include_bytes!("player_info_packet.ron");
+    let packet_bytes = include_bytes!("../../protocols/1.15.2.ron");
 
-    let packet_de: Packet = ron::de::from_bytes(packet_bytes)?;
-    
-    let packet_identifier = PacketIdentifier {
-        direction: PacketDirection::Client,
-        stage: PacketStage::Play,
-        id: 0.into(),
-    };
+    let protocol_de: Protocol = ron::de::from_bytes(packet_bytes)?;
 
-    let (packet_tokens, _packet_ident) = PacketGenerator::generate(&packet_identifier, &packet_de);
+    let protocol = ProtocolGenerator::generate(protocol_de);
 
-    println!("{}", packet_tokens);
+    println!("{}", protocol);
 
     Ok(())
 }
