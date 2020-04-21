@@ -1,39 +1,43 @@
 use crate::types::{TryReadFrom, WriteInto};
 
-pub trait Direction: Sized + 'static {}
-pub struct ServerBound;
-impl Direction for ServerBound {}
-pub struct ClientBound;
-impl Direction for ClientBound {}
+mod direction {
+    pub trait Direction: Sized + 'static {}
+    pub struct Server;
+    impl Direction for Server {}
+    pub struct Client;
+    impl Direction for Client {}
+}
 
-pub trait Stage: Sized + 'static {}
-pub struct HandshakeStage;
-impl Stage for HandshakeStage {}
-pub struct StatusStage;
-impl Stage for StatusStage {}
-pub struct LoginStage;
-impl Stage for LoginStage {}
-pub struct PlayStage;
-impl Stage for PlayStage {}
+mod stage {
+    pub trait Stage: Sized + 'static {}
+    pub struct Handshake;
+    impl Stage for Handshake {}
+    pub struct Status;
+    impl Stage for Status {}
+    pub struct Login;
+    impl Stage for Login {}
+    pub struct Play;
+    impl Stage for Play {}
+}
 
 /// Represents a packet.
 pub trait Packet: Send + Sync + Sized + TryReadFrom + WriteInto {
-    type Direction: Direction;
-    type Stage: Stage;
+    type Direction: direction::Direction;
+    type Stage: stage::Stage;
 
     fn id(&self) -> u32;
     fn name(&self) -> &'static str;
 }
 
 pub trait Protocol: Sized + 'static {
-    type ServerBoundHandshakePacket: Packet<Direction = ServerBound, Stage = HandshakeStage>;
-    type ClientBoundHandshakePacket: Packet<Direction = ClientBound, Stage = HandshakeStage>;
-    type ServerBoundStatusPacket: Packet<Direction = ServerBound, Stage = StatusStage>;
-    type ClientBoundStatusPacket: Packet<Direction = ClientBound, Stage = StatusStage>; 
-    type ServerBoundLoginPacket: Packet<Direction = ServerBound, Stage = LoginStage>; 
-    type ClientBoundLoginPacket: Packet<Direction = ClientBound, Stage = LoginStage>; 
-    type ServerBoundPlayPacket: Packet<Direction = ServerBound, Stage = PlayStage>; 
-    type ClientBoundPlayPacket: Packet<Direction = ClientBound, Stage = PlayStage>;
+    type ServerBoundHandshakePacket: Packet<Direction = direction::Server, Stage = stage::Handshake>;
+    type ClientBoundHandshakePacket: Packet<Direction = direction::Client, Stage = stage::Handshake>;
+    type ServerBoundStatusPacket: Packet<Direction = direction::Server, Stage = stage::Status>;
+    type ClientBoundStatusPacket: Packet<Direction = direction::Client, Stage = stage::Status>; 
+    type ServerBoundLoginPacket: Packet<Direction = direction::Server, Stage = stage::Login>; 
+    type ClientBoundLoginPacket: Packet<Direction = direction::Client, Stage = stage::Login>; 
+    type ServerBoundPlayPacket: Packet<Direction = direction::Server, Stage = stage::Play>; 
+    type ClientBoundPlayPacket: Packet<Direction = direction::Client, Stage = stage::Play>;
 
     fn version() -> u64;
     fn minecraft_version() -> &'static str;

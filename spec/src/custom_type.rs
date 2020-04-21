@@ -63,6 +63,7 @@ pub enum EnumVariant {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ArrayLength {
     RemainingLength,
+    FixedLength(u64),
     Prefixed(Box<Type>),
     Key(String),
 }
@@ -93,6 +94,7 @@ pub enum Type {
     Option(Box<Type>),
     CustomType(String, CustomType),
     Key(Box<Type>),
+    Constant(Literal),
     Shared(SharedTypeId),
 }
 

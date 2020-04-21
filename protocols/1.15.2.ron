@@ -385,6 +385,197 @@
                 )
             })
         ),
+
+        (Client, Play, 0x11): (
+            name: "tab_complete",
+            custom_type: Struct({
+                "id": VarInt,
+                "start": VarInt,
+                "lentgh": VarInt,
+                "count": VarInt,
+                "matches": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("matches", Struct({
+                        "match": String(32767),
+                        "tooltip": Option(Shared("chat")),
+                    }))
+                )
+            })
+        ),
+        (Client, Play, 0x12): (
+            name: "declare_command",
+            custom_type: Struct({
+                "count": VarInt,
+                "nodes": VarInt,
+                "length": Array(
+                    length: Prefixed(VarInt),
+                    type: Shared("node")
+                ),
+                "root_index": VarInt
+            })
+        ),
+        (Client, Play, 0x13): (
+            name: "window_confirmation",
+            custom_type: Struct({
+                "window_id": I8,
+                "action_number": U16,
+                "accepted": Boolean
+            })
+        ),
+        (Client, Play, 0x14): (
+            name: "close_window",
+            custom_type: Struct({
+                "window_id": U8,
+            })
+        ),
+        (Client, Play, 0x15): (
+            name: "window_items",
+            custom_type: Struct({
+                "window_id": U8,
+                "count": I16, // Short
+                "slot_data": Array(
+                    length: Prefixed(VarInt),
+                    type: Shared("slot")
+                ),
+            })
+        ),
+        (Client, Play, 0x16): (
+            name: "window_property",
+            custom_type: Struct({
+                "window_id": U8,
+                "property": I16, // Short
+                "value": I16 // Short
+            })
+        ),
+        (Client, Play, 0x17): (
+            name: "set_slot",
+            custom_type: Struct({
+                "window_id": U8,
+                "slot": I16, // Short
+                "slot_data": Shared("slot")
+            })
+        ),
+        (Client, Play, 0x18): (
+            name: "set_cooldown",
+            custom_type: Struct({
+                "item_id": VarInt,
+                "cooldown_ticks": VarInt
+            })
+        ),
+        (Client, Play, 0x19): (
+            name: "plugin_message",
+            custom_type: Struct({
+                "channel": Shared("identifier"),
+                "data": Array(
+                    length: Prefixed(VarInt),
+                    type: I8
+                ) // Make that an enum
+            })
+        ),
+        (Client, Play, 0x1A): (
+            name: "named_sound_effect",
+            custom_type: Struct({
+                "sound_name": Shared("identifier"),
+                "sound_category": CustomType("sound_category", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "master"): Unit,
+                        (1, "music"): Unit,
+                        (2, "record"): Unit,
+                        (3, "weather"): Unit,
+                        (4, "block"): Unit,
+                        (5, "hostile"): Unit,
+                        (6, "neutral"): Unit,
+                        (7, "player"): Unit,
+                        (8, "ambient"): Unit,
+                        (9, "voice"): Unit,
+                    }
+                )),
+                "effect_position_x": I32,
+                "effect_position_y": I32,
+                "effect_position_z": I32,
+                "volume": F32,
+                "pitch": F32,
+            })
+        ),
+        (Client, Play, 0x1B): (
+            name: "disconnect",
+            custom_type: Struct({
+                "reason": Shared("chat"),
+            })
+        ),
+        (Client, Play, 0x1C): (
+            name: "entity_status",
+            custom_type: Struct({
+                "entity_id": I32,
+                "entity_status": U8,
+            })
+        ),
+        (Client, Play, 0x1D): (
+            name: "explosion",
+            custom_type: Struct({
+                "x": F32,
+                "y": F32,
+                "z": F32,
+                "strength": F32,
+                "record_count": I32,
+                "records": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("relative_location",Struct({
+                        "x": I8,
+                        "y": I8,
+                        "z": I8,
+                    }))
+                ),
+                "player_motion_x": F32,
+                "player_motion_y": F32,
+                "player_motion_z": F32
+            })
+        ),
+        (Client, Play, 0x1E): (
+            name: "unload_chunk",
+            custom_type: Struct({
+                "chunk_x": I32,
+                "chunk_y": I32
+            })
+        ),
+        (Client, Play, 0x1F): (
+            name: "change_game_state",
+            custom_type: Struct({
+                "reason": CustomType("sound_category", Enum(
+                    variant: Prefixed(U8),
+                    variants: {
+                        (0, "invalid_bed"): Unit,
+                        (1, "end_raining"): Unit,
+                        (2, "begin_raining"): Unit,
+                        (3, "change_gamemode"): Unit,
+                        (4, "exit_end"): Unit,
+                        (5, "demo_message"): Unit,
+                        (6, "arrow_hitting_player"): Unit,
+                        (7, "fade_value"): Unit,
+                        (8, "fade_time"): Unit,
+                        (9, "play_pufferfish_sting_sound"): Unit,
+                        (10, "play_elder_guardian_mob_apperance"): Unit,
+                        (11, "enable_respawn_screen"): Unit,
+                    }
+                )),
+                "value": F32
+            })
+        ),
+        (Client, Play, 0x20): (
+            name: "open_horse_window",
+            custom_type: Struct({
+                "window_id": I8,
+                "number_of_slots": VarInt,
+                "entity_id": I32
+            })
+        ),
+        (Client, Play, 0x21): (
+            name: "keep_alive",
+            custom_type: Struct({
+                "keep_alive_id": I64,
+            })
+        ),
         (Server, Play, 0x00): (
             name: "teleport_confirm",
             custom_type: Struct({

@@ -352,8 +352,8 @@ impl TypeGenerator {
             Type::Uuid => (quote! {}, quote! { uuid::Uuid }),
             Type::String(_) => (quote! {}, quote! { String }),
             Type::Nbt => (quote! {}, quote! { () }),
-            Type::Array { schema, .. } => {
-                let (tokens, ident) = TypeGenerator::generate(schema);
+            Type::Array { kind, .. } => {
+                let (tokens, ident) = TypeGenerator::generate(kind);
                 (tokens, quote! { Vec<#ident> })
             }
             Type::Option(inner) => {
