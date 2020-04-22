@@ -1,0 +1,15 @@
+[package]
+name = "feather-protocol-codegen-proc"
+version = "0.1.0"
+authors = ["caelunshun <caelunshun@gmail.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+syn = "1.0"
+quote = "1.0"
+feather-protocol-codegen = { path = "../codegen" }
+ron = "0.5"
