@@ -4,9 +4,6 @@ version = "0.1.0"
 authors = ["caelunshun <caelunshun@gmail.com>"]
 edition = "2018"
 
-[lib]
-proc-macro = false
-
 [dependencies]
 anyhow = "1.0"
 thiserror = "1.0"

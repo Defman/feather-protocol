@@ -15,7 +15,7 @@ pub enum CustomType {
     BitFlags {
         #[serde(rename = "type")]
         kind: Box<Type>,
-        flags: IndexMap<u64, String>,
+        flags: BTreeMap<u64, String>,
     },
     Unit,
 }

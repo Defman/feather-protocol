@@ -10,8 +10,9 @@ thiserror = "1.0"
 anyhow = "1.0"
 uuid = "0.8"
 hematite-nbt = "0.4"
-feather-protocol-codegen = { path = "./codegen" }
+feather-protocol-codegen-proc = { path = "./codegen-proc" }
 serde = "1.0"
+bitflags = "1.2"
 
 [workspace]
-members = [".", "codegen", "spec", "extractor"]
+members = [".", "codegen", "codegen-proc", "spec", "extractor"]
