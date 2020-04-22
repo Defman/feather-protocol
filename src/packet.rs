@@ -1,4 +1,4 @@
-use bytes::{Buf, BytesMut};
+use bytes::{Bytes, BytesMut};
 use thiserror::Error;
 
 #[derive(Debug)]
@@ -22,8 +22,8 @@ pub trait Packet: Send + Sync + Sized {
     fn direction(&self) -> Direction;
     fn stage(&self) -> Stage;
 
-    fn encode(&self) -> BytesMut;
-    fn decode(buf: &mut impl Buf) -> Result<Self, DecodeError>;
+    fn encode(&self, buf: &mut BytesMut) -> usize;
+    fn decode(buf: &mut Bytes) -> Result<Self, DecodeError>;
 }
 
 #[derive(Error, Debug)]

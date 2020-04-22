@@ -37,7 +37,7 @@ impl<T: DeserializeOwned + Serialize> Deref for Nbt<T> {
 
 #[derive(Debug, Clone)]
 pub struct VarInt {
-    pub inner: i32,
+    inner: i32,
 }
 
 impl From<i32> for VarInt {

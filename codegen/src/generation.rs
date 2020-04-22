@@ -183,20 +183,20 @@ impl StageGenerator {
                             #stage
                         }
 
-                        fn encode(&self) -> bytes::BytesMut {
+                        fn encode(&self, buf: &mut bytes::BytesMut) -> usize {
                             match self {
                                 #(
-                                    Packet::#packet_names(packet) => packet.encode(),
+                                    Packet::#packet_names(packet) => packet.encode(buf),
                                 )*
-                                _ => panic!(),
+                                _ => 0,
                             }
                         }
 
-                        fn decode(buf: &mut impl bytes::Buf) -> Result<Self, crate::packet::DecodeError> {
+                        fn decode(buf: &mut bytes::Bytes) -> Result<Self, crate::packet::DecodeError> {
                             use crate::types::TryReadInto;
-                            let mut packet_id = &buf.bytes()[..5];
+                            let mut packet_id = buf.slice(..5);
                             let packet_id: crate::types::VarInt = packet_id.try_read()?;
-                            let packet_id = *packet_id as u64; 
+                            let packet_id = *packet_id as u64;
                             Ok(match packet_id {
                                 #(
                                     #packet_ids => Packet::#packet_names(#packets_idents::decode(buf)?),
@@ -271,13 +271,18 @@ impl PacketGenerator {
                 pub mod #ident {
                     #custom_type
 
+                    impl #custom_type_ident {
+                        const ID: u64 = #id_lit;
+                        const NAME: &'static str = #name_lit;
+                    }
+
                     impl crate::Packet for #custom_type_ident {
                         fn id(&self) -> u64 {
-                            #id_lit
+                            Self::ID
                         }
 
                         fn name(&self) -> &'static str {
-                            #name_lit
+                            Self::NAME
                         }
 
                         fn direction(&self) -> crate::Direction {
@@ -288,22 +293,27 @@ impl PacketGenerator {
                             #stage
                         }
 
-                        fn encode(&self) -> bytes::BytesMut {
-                            unimplemented!()
+                        fn encode(&self, buf: &mut bytes::BytesMut) -> usize {
+                            use crate::types::WriteInto;
+                            let mut total = 0;
+                            total += crate::types::VarInt::from(self.id() as i32).write(buf);
+                            // generate encoding here
+                            total
                         }
 
-                        fn decode(buf: &mut impl bytes::Buf) -> Result<Self, crate::packet::DecodeError> {
+                        fn decode(buf: &mut bytes::Bytes) -> Result<Self, crate::packet::DecodeError> {
                             use crate::types::TryReadInto;
-                            let mut packet_id = &buf.bytes()[..5];
+                            let mut packet_id = buf.slice(..5);
                             let packet_id: crate::types::VarInt = packet_id.try_read()?;
-                            let packet_id = *packet_id as u64; 
-                            if packet_id != self.id() {
+                            let packet_id = *packet_id as u64;
+                            if packet_id != Self::ID {
                                 Err(crate::packet::DecodeError::NonExistentPacket {
                                     direction: #direction,
                                     stage: #stage,
                                     id: packet_id,
                                 })?;
                             }
+                            // generate decoding here
                             unimplemented!()
                         }
                     }
