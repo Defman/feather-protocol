@@ -1,5 +1,5 @@
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::LitStr;
 
 use indexmap::IndexMap;
@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use feather_protocol_spec::{
     CustomType, EnumVariant, FieldName, Packet, PacketDirection, PacketIdentifier, PacketStage,
-    Protocol, Type, VariantKey,
+    Protocol, Type, VariantKey, ArrayLength,
 };
 
 pub struct ProtocolGenerator;
@@ -193,10 +193,10 @@ impl StageGenerator {
                         }
 
                         fn decode(buf: &mut bytes::Bytes) -> Result<Self, crate::packet::DecodeError> {
-                            use crate::types::TryReadInto;
+                            use crate::types::*;
                             let mut packet_id = buf.slice(..5);
-                            let packet_id: crate::types::VarInt = packet_id.try_read()?;
-                            let packet_id = *packet_id as u64;
+                            let packet_id: VarInt = packet_id.try_read()?;
+                            let packet_id = *packet_id as u64; 
                             Ok(match packet_id {
                                 #(
                                     #packet_ids => Packet::#packet_names(#packets_idents::decode(buf)?),
@@ -264,7 +264,7 @@ impl PacketGenerator {
             PacketStage::Play => quote! { crate::Stage::Play },
         };
 
-        // let serialization = SerilizationGenerator::generate(&identifier, &packet);
+        let decode_custom_type = EncodingGenerator::decode_custom_type(&packet.custom_type);
         (
             quote! {
                 pub use #ident::#custom_type_ident;
@@ -274,6 +274,8 @@ impl PacketGenerator {
                     impl #custom_type_ident {
                         const ID: u64 = #id_lit;
                         const NAME: &'static str = #name_lit;
+                        const DIRECTION: crate::Direction = #direction;
+                        const STAGE: crate::Stage = #stage;
                     }
 
                     impl crate::Packet for #custom_type_ident {
@@ -286,26 +288,26 @@ impl PacketGenerator {
                         }
 
                         fn direction(&self) -> crate::Direction {
-                            #direction
+                            Self::DIRECTION
                         }
 
                         fn stage(&self) -> crate::Stage {
-                            #stage
+                            Self::STAGE
                         }
 
                         fn encode(&self, buf: &mut bytes::BytesMut) -> usize {
-                            use crate::types::WriteInto;
+                            use crate::types::*;
                             let mut total = 0;
-                            total += crate::types::VarInt::from(self.id() as i32).write(buf);
-                            // generate encoding here
+                            total += VarInt::from(Self::ID as i32).write(buf);
                             total
                         }
 
                         fn decode(buf: &mut bytes::Bytes) -> Result<Self, crate::packet::DecodeError> {
-                            use crate::types::TryReadInto;
+                            use crate::types::*;
+                            use bytes::Buf;
                             let mut packet_id = buf.slice(..5);
-                            let packet_id: crate::types::VarInt = packet_id.try_read()?;
-                            let packet_id = *packet_id as u64;
+                            let packet_id: VarInt = packet_id.try_read()?;
+                            let packet_id = *packet_id as u64; 
                             if packet_id != Self::ID {
                                 Err(crate::packet::DecodeError::NonExistentPacket {
                                     direction: #direction,
@@ -313,8 +315,9 @@ impl PacketGenerator {
                                     id: packet_id,
                                 })?;
                             }
-                            // generate decoding here
-                            unimplemented!()
+                            Ok({
+                                #decode_custom_type
+                            })
                         }
                     }
 
@@ -326,11 +329,116 @@ impl PacketGenerator {
     }
 }
 
-pub struct SerilizationGenerator;
+pub struct EncodingGenerator;
 
-impl SerilizationGenerator {
-    pub fn generate(_custom_type: &CustomType) -> TokenStream {
-        quote! {}
+impl EncodingGenerator {
+
+    pub fn decode_custom_type(custom_type: &CustomType) -> TokenStream {
+        match custom_type {
+            CustomType::Struct(fields) => {
+                let (field_names, field_decoders): (Vec<_>, Vec<_>) = fields
+                    .iter()
+                    .map(|(name, kind)| (
+                        Self::field_ident(name),
+                        Self::decode_type(kind),
+                    )).unzip();
+                quote! {
+                    #(
+                        let #field_names = #field_decoders;
+                    )*
+                    Self {
+                        #(#field_names),*
+                    }
+                }
+            },
+            CustomType::Enum {
+                variant,
+                variants
+            } => {
+                let read_key = match variant {
+                    EnumVariant::Prefixed(kind) => Self::decode_type(kind),
+                    EnumVariant::Key(key) => Self::field_ident(key).to_token_stream(),
+                };
+
+                let (literals, names): (Vec<_>, Vec<_>) = variants
+                    .iter()
+                    .map(|(l, _)| (&l.0, CustomTypeGenerator::ident(&*l.1)))
+                    .unzip();
+
+                quote! {
+                    
+                }
+            },
+            _ => quote! { unimplemented!() }
+        }
+    }
+
+    pub fn decode_type(ty: &Type) -> TokenStream {
+        match ty {
+            Type::Boolean => quote! { bool::try_read(buf)? },
+            Type::U8 => quote! { u8::try_read(buf)? },
+            Type::I8 => quote! { i8::try_read(buf)? },
+            Type::U16 => quote! { u16::try_read(buf)? },
+            Type::I16 => quote! { i16::try_read(buf)? },
+            Type::U32 => quote! { u32::try_read(buf)? },
+            Type::I32 => quote! { i32::try_read(buf)? },
+            Type::U64 => quote! { u64::try_read(buf)? },
+            Type::I64 => quote! { i64::try_read(buf)? },
+            Type::F32 => quote! { f32::try_read(buf)? },
+            Type::F64 => quote! { f64::try_read(buf)? },
+            Type::VarInt => quote! { *VarInt::try_read(buf)? },
+            Type::VarLong => quote! { *VarLong::try_read(buf)? },
+            Type::Uuid => quote! { uuid::Uuid::try_read(buf)? },
+            Type::String(_) => quote! { String::try_read(buf)? },
+            Type::Nbt => quote! { Nbt::try_read(buf)?.take() },
+            Type::Array { length, kind } => {
+                let length = match length {
+                    ArrayLength::FixedLength(length) => length.to_token_stream(),
+                    ArrayLength::Key(name) => Self::field_ident(name).to_token_stream(),
+                    ArrayLength::Prefixed(kind) => Self::decode_type(kind),
+                    ArrayLength::RemainingLength => quote! { buf.remaining() },
+                };
+                let read_type =  EncodingGenerator::decode_type(kind);
+                quote! {
+                    {
+                        let length = #length;
+                        let mut array = Vec::with_capacity(length as usize);
+                        for _ in 0..length {
+                            array.push(#read_type)
+                        }
+                        array
+                    }
+                }
+            }
+            Type::Option(inner) => {
+                let read_type = EncodingGenerator::decode_type(inner);
+                quote! {
+                    {
+                        let some = bool::try_read(buf)?;
+                        if some {
+                            Some(#read_type)
+                        } else {
+                            None
+                        }
+                    }
+                }
+            },
+            Type::CustomType(_, custom_type) => Self::decode_custom_type(custom_type),
+            Type::Constant(_) => quote! { unimplemented!() },
+            Type::Key(_) => quote! { unimplemented!() },
+            Type::Shared(name) => quote! { unimplemented!() }
+        }
+    }
+    
+    pub fn field_ident(name: &str) -> Ident {
+        use heck::SnakeCase;
+        let name = name.to_snake_case();
+        let name = match name.as_ref() {
+            "type" => "kind",
+            "match" => "match_",
+            name => name,
+        };
+        Ident::new(&name, Span::call_site())
     }
 }
 
@@ -485,11 +593,11 @@ impl TypeGenerator {
             Type::I64 => (quote! {}, quote! { i64 }),
             Type::F32 => (quote! {}, quote! { f32 }),
             Type::F64 => (quote! {}, quote! { f64 }),
-            Type::VarInt => (quote! {}, quote! { crate::types::VarInt }),
-            Type::VarLong => (quote! {}, quote! { crate::types::VarLong }),
+            Type::VarInt => (quote! {}, quote! { i32 }),
+            Type::VarLong => (quote! {}, quote! { i64 }),
             Type::Uuid => (quote! {}, quote! { uuid::Uuid }),
             Type::String(_) => (quote! {}, quote! { String }),
-            Type::Nbt => (quote! {}, quote! { () }),
+            Type::Nbt => (quote! {}, quote! { nbt::Blob }),
             Type::Array { kind, .. } => {
                 let (tokens, ident) = TypeGenerator::generate(kind.as_ref());
                 (tokens, quote! { Vec<#ident> })

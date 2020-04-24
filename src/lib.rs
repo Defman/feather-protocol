@@ -1,8 +1,8 @@
-mod packet;
+pub mod packet;
 mod codec;
 pub mod types;
 
-pub use packet::{Protocol, Packet, Direction, Stage};
+pub use packet::{Protocol, Packet, State, Direction, direction, Stage, stage};
 
 /// Protocol version.
 #[allow(non_snake_case)]
@@ -16,5 +16,5 @@ pub enum ProtocolVersion {
 }
 
 mod v1_15_2 {
-    feather_protocol_codegen_proc::protocol!("./protocols/1.15.2.ron");
+    // feather_protocol_codegen_proc::protocol!("./protocols/1.15.2.ron");
 }

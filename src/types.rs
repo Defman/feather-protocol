@@ -18,20 +18,26 @@ pub enum Error {
 }
 
 #[derive(Debug, Clone)]
-pub struct Nbt<T: DeserializeOwned + Serialize> {
-    pub inner: T,
+pub struct Nbt {
+    pub blob: nbt::Blob,
 }
 
-impl<T: DeserializeOwned + Serialize> From<T> for Nbt<T> {
-    fn from(nbt: T) -> Self {
-        Nbt { inner: nbt }
+impl Nbt {
+    pub fn take(self) -> nbt::Blob {
+        self.blob
     }
 }
 
-impl<T: DeserializeOwned + Serialize> Deref for Nbt<T> {
-    type Target = T;
+impl From<nbt::Blob> for Nbt {
+    fn from(blob: nbt::Blob) -> Self {
+        Nbt { blob }
+    }
+}
+
+impl Deref for Nbt {
+    type Target = nbt::Blob;
     fn deref(&self) -> &Self::Target {
-        &self.inner
+        &self.blob
     }
 }
 
@@ -256,9 +262,9 @@ impl TryReadFrom for bool {
     }
 }
 
-impl<T: DeserializeOwned + Serialize> TryReadFrom for Nbt<T> {
+impl TryReadFrom for Nbt {
     fn try_read(buf: &mut impl Buf) -> Result<Self, Error> {
-        nbt::from_reader::<_, T>(buf.reader())
+        nbt::from_reader::<_, nbt::Blob>(buf.reader())
             .map(Nbt::from)
             .map_err(|_| Error::Malformed.into())
     }

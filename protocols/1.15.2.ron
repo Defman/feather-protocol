@@ -130,7 +130,7 @@
                 "velocity_z": I16,
             })
         ),
-        (Client, Play, 0x01): (
+                (Client, Play, 0x01): (
             name: "spawn_experience_orb",
             custom_type: Struct({
                 "entity_id": Shared("entity_id"),
@@ -286,6 +286,21 @@
                 "destroy_stage": I8
             })
         ),
+        (Client, Play, 0x10): (
+            name: "multi_block_change",
+            custom_type: Struct({
+                "chunk_x": I32,
+                "chunk_z": I32,
+                "record": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("record", Struct({
+                        "horizontal_position": U8,
+                        "y_coordinate": U8,
+                        "block_id": VarInt,
+                    }))
+                )
+            })
+        ),
         (Client, Play, 0x0A): (
             name: "block_entity_data",
             custom_type: Struct({
@@ -370,213 +385,157 @@
                 )),
             })
         ),
-        (Client, Play, 0x10): (
-            name: "multi_block_change",
+        (Server, Play, 0x22): (
+            name: "set_beacon_effect",
             custom_type: Struct({
-                "chunk_x": I32,
-                "chunk_z": I32,
-                "record": Array(
-                    length: Prefixed(VarInt),
-                    type: CustomType("record", Struct({
-                        "horizontal_position": U8,
-                        "y_coordinate": U8,
-                        "block_id": VarInt,
-                    }))
-                )
+                "primary_effect": VarInt,
+                "secondary_effect": VarInt,
             })
         ),
-
-        (Client, Play, 0x11): (
-            name: "tab_complete",
+        (Server, Play, 0x23): (
+            name: "held_item_change",
             custom_type: Struct({
-                "id": VarInt,
-                "start": VarInt,
-                "lentgh": VarInt,
-                "count": VarInt,
-                "matches": Array(
-                    length: Prefixed(VarInt),
-                    type: CustomType("matches", Struct({
-                        "match": String(32767),
-                        "tooltip": Option(Shared("chat")),
-                    }))
-                )
+                "slot": I16,
             })
         ),
-        (Client, Play, 0x12): (
-            name: "declare_command",
+        (Server, Play, 0x24): (
+            name: "update_command_block",
             custom_type: Struct({
-                "count": VarInt,
-                "nodes": VarInt,
-                "length": Array(
-                    length: Prefixed(VarInt),
-                    type: Shared("node")
-                ),
-                "root_index": VarInt
-            })
-        ),
-        (Client, Play, 0x13): (
-            name: "window_confirmation",
-            custom_type: Struct({
-                "window_id": I8,
-                "action_number": U16,
-                "accepted": Boolean
-            })
-        ),
-        (Client, Play, 0x14): (
-            name: "close_window",
-            custom_type: Struct({
-                "window_id": U8,
-            })
-        ),
-        (Client, Play, 0x15): (
-            name: "window_items",
-            custom_type: Struct({
-                "window_id": U8,
-                "count": I16, // Short
-                "slot_data": Array(
-                    length: Prefixed(VarInt),
-                    type: Shared("slot")
-                ),
-            })
-        ),
-        (Client, Play, 0x16): (
-            name: "window_property",
-            custom_type: Struct({
-                "window_id": U8,
-                "property": I16, // Short
-                "value": I16 // Short
-            })
-        ),
-        (Client, Play, 0x17): (
-            name: "set_slot",
-            custom_type: Struct({
-                "window_id": U8,
-                "slot": I16, // Short
-                "slot_data": Shared("slot")
-            })
-        ),
-        (Client, Play, 0x18): (
-            name: "set_cooldown",
-            custom_type: Struct({
-                "item_id": VarInt,
-                "cooldown_ticks": VarInt
-            })
-        ),
-        (Client, Play, 0x19): (
-            name: "plugin_message",
-            custom_type: Struct({
-                "channel": Shared("identifier"),
-                "data": Array(
-                    length: Prefixed(VarInt),
-                    type: I8
-                ) // Make that an enum
-            })
-        ),
-        (Client, Play, 0x1A): (
-            name: "named_sound_effect",
-            custom_type: Struct({
-                "sound_name": Shared("identifier"),
-                "sound_category": CustomType("sound_category", Enum(
+                "location": Shared("position"),
+                "command": String(32767),
+                "mode": CustomType("mode", Enum(
                     variant: Prefixed(VarInt),
                     variants: {
-                        (0, "master"): Unit,
-                        (1, "music"): Unit,
-                        (2, "record"): Unit,
-                        (3, "weather"): Unit,
-                        (4, "block"): Unit,
-                        (5, "hostile"): Unit,
-                        (6, "neutral"): Unit,
-                        (7, "player"): Unit,
-                        (8, "ambient"): Unit,
-                        (9, "voice"): Unit,
+                        (0, "sequence"): Unit,
+                        (1, "auto"): Unit,
+                        (2, "redstone"): Unit,
                     }
                 )),
-                "effect_position_x": I32,
-                "effect_position_y": I32,
-                "effect_position_z": I32,
-                "volume": F32,
-                "pitch": F32,
+                "flags": CustomType("flags", BitFlags(
+                    type: I8,
+                    flags: {
+                    0x01: "track_output",
+                    0x02: "is_conditional",
+                    0x04: "automatic",
+                }))
             })
         ),
-        (Client, Play, 0x1B): (
-            name: "disconnect",
+        (Server, Play, 0x25): (
+            name: "creative_inventory_action",
             custom_type: Struct({
-                "reason": Shared("chat"),
+                "entity_id": Shared("entity_id"),
+                "command": String(0),
+                "tract_output": Boolean,
             })
         ),
-        (Client, Play, 0x1C): (
-            name: "entity_status",
+        (Server, Play, 0x27): (
+            name: "update_jigsaw_block",
             custom_type: Struct({
-                "entity_id": I32,
-                "entity_status": U8,
+                "location": Shared("position"),
+                "attachment_type": Shared("identifier"),
+                "target_pool": Shared("identifier"),
+                "final_state": String(0),
             })
         ),
-        (Client, Play, 0x1D): (
-            name: "explosion",
+        (Server, Play, 0x28): (
+            name: "update_structure_block",
             custom_type: Struct({
-                "x": F32,
-                "y": F32,
-                "z": F32,
-                "strength": F32,
-                "record_count": I32,
-                "records": Array(
-                    length: Prefixed(VarInt),
-                    type: CustomType("relative_location",Struct({
-                        "x": I8,
-                        "y": I8,
-                        "z": I8,
-                    }))
-                ),
-                "player_motion_x": F32,
-                "player_motion_y": F32,
-                "player_motion_z": F32
-            })
-        ),
-        (Client, Play, 0x1E): (
-            name: "unload_chunk",
-            custom_type: Struct({
-                "chunk_x": I32,
-                "chunk_y": I32
-            })
-        ),
-        (Client, Play, 0x1F): (
-            name: "change_game_state",
-            custom_type: Struct({
-                "reason": CustomType("sound_category", Enum(
-                    variant: Prefixed(U8),
+                "location": Shared("postion"),
+                "action": CustomType("action", Enum(
+                    variant: Prefixed(VarInt),
                     variants: {
-                        (0, "invalid_bed"): Unit,
-                        (1, "end_raining"): Unit,
-                        (2, "begin_raining"): Unit,
-                        (3, "change_gamemode"): Unit,
-                        (4, "exit_end"): Unit,
-                        (5, "demo_message"): Unit,
-                        (6, "arrow_hitting_player"): Unit,
-                        (7, "fade_value"): Unit,
-                        (8, "fade_time"): Unit,
-                        (9, "play_pufferfish_sting_sound"): Unit,
-                        (10, "play_elder_guardian_mob_apperance"): Unit,
-                        (11, "enable_respawn_screen"): Unit,
+                        (0, "update_data"): Unit,
+                        (1, "save_structure"): Unit,
+                        (2, "load_the_structure"): Unit,
+                        (3, "detect_size"): Unit,
                     }
                 )),
-                "value": F32
+                "mode": CustomType("mode", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "save"): Unit,
+                        (1, "load"): Unit,
+                        (2, "corner"): Unit,
+                        (3, "data"): Unit,
+                    }
+                )),
+                "name": String(0),
+                "offset_x": U8,
+                "offset_y": U8,
+                "offset_z": U8,
+                "size_x": U8,
+                "size_y": U8,
+                "size_z": U8,
+                "mirror": CustomType("mirror", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "none"): Unit,
+                        (1, "left_right"): Unit,
+                        (2, "front_back"): Unit,
+                    }
+                )),
+                "rotation": CustomType("rotation", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "none"): Unit,
+                        (1, "clockwise_90"): Unit,
+                        (2, "clockwise_180"): Unit,
+                        (3, "counter_clockwise_90"): Unit,
+                    }
+                )),
+                "metadata": String(0),
+                "integrity": F32,
+                "seed": VarLong,
+                "flags": CustomType("flags", BitFlags(
+                    type: U8,
+                    flags: {
+                        0x01: "ignore_entities",
+                        0x02: "show_air",
+                        0x04: "show_bounding_box",
+                    }
+                ))
             })
         ),
-        (Client, Play, 0x20): (
-            name: "open_horse_window",
+        (Server, Play, 0x29): (
+            name: "update_sign",
             custom_type: Struct({
-                "window_id": I8,
-                "number_of_slots": VarInt,
-                "entity_id": I32
+                "location": Shared("position"),
+                "line_1": String(384),
+                "line_2": String(384),
+                "line_3": String(384),
+                "line_4": String(384),                
             })
         ),
-        (Client, Play, 0x21): (
-            name: "keep_alive",
+        (Server, Play, 0x2A): (
+            name: "animation",
             custom_type: Struct({
-                "keep_alive_id": I64,
+                "hand": Shared("hand"),
+            }),
+        ),
+        (Server, Play, 0x1B): (
+            name: "spectate",
+            custom_type: Struct({
+                "target_player": Uuid,
+            }),
+        ),
+        (Server, Play, 0x2C): (
+            name: "player_block_placement",
+            custom_type: Struct({
+                "hand": Shared("hand"),
+                "location": Shared("position"),
+                "face": Shared("face"),
+                "cursor_position_x": F32,
+                "cursor_position_y": F32,
+                "cursor_position_z": F32,
+                "inside_block": Boolean,
             })
         ),
-
+        (Server, Play, 0x2D): (
+            name: "use item",
+            custom_type: Struct({
+                "hand": Shared("hand")
+            }),
+        ),
         (Client, Play, 0x11): (
             name: "tab_complete",
             custom_type: Struct({
@@ -838,27 +797,8 @@
             name: "join_game",
             custom_type: Struct({
                 "entity_id": I32,
-                "gamemode": CustomType("gamemode",Enum(
-                    variant: Prefixed(U8),
-                    variants: {
-                        (0, "survival"): Unit,
-                        (0b1000, "survival_hardcore"): Unit,
-                        (1, "creative"): Unit,
-                        (0b1001, "creative_hardcore"): Unit,
-                        (2, "adventure"): Unit,
-                        (0b1010, "adventure_hardcore"): Unit,
-                        (2, "spectator"): Unit,
-                        (0b1011, "spectator_hardcore"): Unit,
-                    }
-                )),
-                "dimension": CustomType("dimension",Enum(
-                    variant: Prefixed(I32),
-                    variants: {
-                        (-1, "nether"): Unit,
-                        (0, "overworld"): Unit,
-                        (1, "end"): Unit,
-                    }
-                )),
+                "gamemode": Shared("gamemode"),
+                "dimension": Shared("dimension"),
                 "hashed_seed": I64,
                 "max_players": U8,
                 "level_type": CustomType("level_type",Enum(
@@ -1015,7 +955,7 @@
         (Client, Play, 0x32): (
             name: "player_abilities",
             custom_type: Struct({
-                "flags": CustomType("flags", BitFlags(
+                "flags": CustomType("player_abilities", BitFlags(
                     type: U8,
                     flags: {
                         0x01: "invulnerable",
@@ -1027,6 +967,652 @@
                 "recipe": String(32767) // Change max size
             })
         ),
+        (Client, Play, 0x33): (
+            name: "combat_event",
+            custom_type: Struct({
+                "event": CustomType("combat_event",Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0, "enter_combat"): Unit,
+                        (1, "end_combat"): Struct({
+                            "duration": VarInt,
+                            "entity_id": I32
+                        }),
+                        (2, "entity_dead"): Struct({
+                            "player_id": VarInt,
+                            "entity_id": I32,
+                            "message": Shared("chat")
+                        }),
+                    }
+                ))
+            })
+        ),
+        (Client, Play, 0x35): (
+            name: "face_player",
+            custom_type: Struct({
+                "feet_eyes": Shared("feet_eyes"),
+                "target_x": F64,
+                "target_y": F64,
+                "target_z": F64,
+                "is_entity": Boolean,
+                "entity_id": Option(VarInt),
+                "entity_feet_eyes": Option(Shared("feet_eyes")),
+            })
+        ),
+        (Client, Play, 0x36): (
+            name: "player_position_and_look",
+            custom_type: Struct({
+                "x": F64,
+                "y": F64,
+                "z": F64,
+                "yaw": F32,
+                "pitch": F32,
+                "flags": CustomType("flags", BitFlags(
+                    type: U8,
+                    flags: {
+                        0x01: "x",
+                        0x02: "z",
+                        0x04: "y",
+                    }
+                )),
+                "teleport_id": VarInt,
+            })
+        ),
+        (Client, Play, 0x38): (
+            name: "destroy_entities",
+            custom_type: Struct({
+                "count": VarInt,
+                "entity_ids": Array(
+                    length: Prefixed(VarInt),
+                    type: VarInt
+                ),
+            })
+        ),
+        (Client, Play, 0x39): (
+            name: "remove_entity_effect",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "effect_id": I8,
+            })
+        ),
+        (Client, Play, 0x3A): (
+            name: "resource_pack_send",
+            custom_type: Struct({
+                "url": String(32767),
+                "hash": String(40),
+            })
+        ),
+        (Client, Play, 0x3B): (
+            name: "respawn",
+            custom_type: Struct({
+                "dimension": String(32767),
+                "hashed_seed": F64,
+                "gamemode": Shared("gamemode"),
+                "level_type": String(16)
+
+            })
+        ),
+        (Client, Play, 0x3C): (
+            name: "entity_head_look",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "head_yaw": U8,
+            })
+        ),
+        (Client, Play, 0x3D): (
+            name: "select_advancement_tab",
+            custom_type: Struct({
+                "identifier": Option(String (32767)),
+            })
+        ),
+        (Client, Play, 0x3E): (
+            name: "world_border",
+            custom_type: Struct({
+                "action": CustomType("world_border_action",Enum(
+                        variant: Prefixed(VarInt),
+                        variants: {
+                            (0,"set_size"): Struct({
+                                "diameter": F64
+                            }),
+                            (1,"lerp_size"): Struct({
+                                "old_diameter": F64,
+                                "new_diameter": F64,
+                                "speed": VarLong,
+                            }),
+                            (2,"set_center"): Struct({
+                                "x": F64,
+                                "z": F64,
+                            }),
+                            (3,"intitialize"): Struct({
+                                "x": F64,
+                                "z": F64,
+                                "old_diameter": F64,
+                                "new_diameter": F64,
+                                "speed": VarLong,
+                                "portal_teleport_boundary": VarInt,
+                                "warning_time": VarInt,
+                                "warning_blocks": VarInt,
+                            }),
+                            (4,"set_warning_time"): Struct({
+                                "warning_time": VarInt,
+                            }),
+                            (5,"set_warning_blocks"): Struct({
+                                "warning_blocks": VarInt,
+                            })
+                        }
+                )),
+            })
+        ),
+        (Client, Play, 0x3F): (
+            name: "camera",
+            custom_type: Struct({
+                "camera_id": VarInt,
+            })
+        ),
+        (Client, Play, 0x40): (
+            name: "held_item_change",
+            custom_type: Struct({
+                "slot": I8,
+            })
+        ),
+        (Client, Play, 0x41): (
+            name: "update_view_position",
+            custom_type: Struct({
+                "chunk_x": VarInt,
+                "chunk_y": VarInt,
+            })
+        ),
+        (Client, Play, 0x42): (
+            name: "update_view_distance",
+            custom_type: Struct({
+                "view_distance": VarInt,
+            })
+        ),
+        (Client, Play, 0x43): (
+            name: "display_scoreboard",
+            custom_type: Struct({
+                "position": I8,
+                "score_namme": String(16),
+            })
+        ),
+        (Client, Play, 0x45): (
+            name: "attach_entity",
+            custom_type: Struct({
+                "attached_entity_id": I32,
+                "holding_entity_id": I32,
+            })
+        ),
+        (Client, Play, 0x46): (
+            name: "entity_velocity",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "velocity_x": I16,
+                "velocity_y": I16,
+                "velocity_z": I16
+            })
+        ),
+        (Client, Play, 0x47): (
+            name: "entity_equipement",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "slot": CustomType("equipement_slot",Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0,"main_hand"): Unit,
+                        (1,"off_hand"): Unit,
+                        (2,"boots"): Unit,
+                        (3,"leggings"): Unit,
+                        (4,"chestplate"): Unit,
+                        (5,"helmet"): Unit,
+                    }
+                )),
+                "item": Shared("slot")
+            })
+        ),
+        (Client, Play, 0x48): (
+            name: "set_experience",
+            custom_type: Struct({
+                "experience_bar": F32,
+                "level": VarInt,
+                "total_experience": VarInt
+            })
+        ),
+        (Client, Play, 0x49): (
+            name: "update_health",
+            custom_type: Struct({
+                "health": F32,
+                "food": VarInt,
+                "food_stauration": F32
+            })
+        ),
+        (Client, Play, 0x4A): (
+            name: "scoreboard_objective",
+            custom_type: Struct({
+                "objective_name": String(16),
+                "mode": CustomType("scoreboard_action", Enum(
+                    variant: Prefixed(I8),
+                    variants: {
+                        (0, "create"): Unit,
+                        (1, "remove"): Unit,
+                        (2, "update"): Unit,
+                    }
+                )),
+                "objective_value": Option(String(32767)),
+                "type": Option(CustomType("scoreboard_mode", Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0,"integer"):Unit,
+                        (1,"hearts"):Unit
+                    }
+                )))
+            })
+        ),
+        (Client, Play, 0x4B): (
+            name: "set_passengers",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "passenger_count": VarInt,
+                "passengers": Array(
+                    length: Prefixed(U32),
+                    type: VarInt
+                )
+            })
+        ),
+        (Client, Play, 0x4C): (
+            name: "teams",
+            custom_type: Struct({
+                "team name": String(16),
+                "mode": I8,
+                "action": CustomType("teams_action", Enum(
+                    variant: Prefixed(U8),
+                    variants: {
+                        (0,"create_team"): Struct({
+                            "team_display_name": String(32767),
+                            "friendly_flags": CustomType("friendly_flags", BitFlags(
+                                type: U8,
+                                flags: {
+                                    0x01: "allow_friendly_fire",
+                                    0x02: "can_see_invisible_players_on_same_team",
+                                }
+                            )),
+                            "name_tag_visibility": CustomType("name_tag_visibility", Enum(
+                                variant: Prefixed(String(32)),
+                                variants: {
+                                    ("always", "always"): Unit,
+                                    ("hideForOtherTeams", "hide_for_other_teams"): Unit,
+                                    ("hideForOwnTeam", "hide_for_own_team"): Unit,
+                                    ("neve", "never"): Unit
+                                }
+                            )),
+                            "collision_rule": CustomType("collision_rule", Enum(
+                                variant: Prefixed(String(32)),
+                                variants: {
+                                    ("always", "always"): Unit,
+                                    ("pushOtherTeams", "push_other_teams"): Unit,
+                                    ("pushOwnTeam", "push_own_team"): Unit,
+                                    ("never", "never"): Unit
+                                }
+                            )),
+                            "team_color": VarInt,
+                            "team_prefix": String(32767),
+                            "team_suffix": String(32767),
+                            "entity_count": VarInt,
+                            "entities": Array(
+                                length: Prefixed(I32),
+                                type: String(40)
+                            )
+                        }),
+                        (1,"remove_team"): Unit,
+                        (2,"update_team_info"): Struct({
+                            "team_display_name": String(32767),
+                            "friendly_flags": CustomType("friendly_flags", BitFlags(
+                                type: U8,
+                                flags: {
+                                    0x01: "allow_friendly_fire",
+                                    0x02: "can_see_invisible_players_on_same_team",
+                                }
+                            )),
+                            "name_tag_visibility": CustomType("name_tag_visibility", Enum(
+                                variant: Prefixed(String(32)),
+                                variants: {
+                                    ("always", "always"): Unit,
+                                    ("hideForOtherTeams", "hide_for_other_team"): Unit,
+                                    ("hideForOwnTeam", "hide_for_own_team"): Unit,
+                                    ("never", "never"): Unit
+                                }
+                            )),
+                            "collision_rule": CustomType("collision_rule", Enum(
+                                variant: Prefixed(String(32)),
+                                variants: {
+                                    ("always", "always"): Unit,
+                                    ("pushOtherTeams", "push_other_teams"): Unit,
+                                    ("pushOwnTeam", "push_own_team"): Unit,
+                                    ("never", "never"): Unit
+                                }
+                            )),
+                            "team_color": VarInt,
+                            "team_prefix": String(32767),
+                            "team_suffix": String(32767),
+                        }),
+                        (3,"add_players_to_team"): Struct({
+                            "entities": Array(
+                                length: Prefixed(VarInt),
+                                type: String(40)
+                            )
+                        }),
+                        (4,"remove_players_from_team"): Struct({
+                            "entities": Array(
+                                length: Prefixed(VarInt),
+                                type: String(40)
+                            )
+                        })
+                    }
+                ))
+            })
+        ),
+        (Client, Play, 0x4D): (
+            name: "update_score",
+            custom_type: Struct({
+                "entity_name": String(40),
+                "action": CustomType("item_action", Enum(
+                    variant: Prefixed(I8),
+                    variants: {
+                        (0, "create_or_update"): Unit,
+                        (1, "remove"): Unit,
+                    }
+                )),
+                "objective_name": String(16),
+                "value": Option(VarInt)
+            })
+        ),
+        (Client, Play, 0x4E): (
+            name: "spawn_position",
+            custom_type: Struct({
+                "location": Shared("position")
+            })
+        ),
+        (Client, Play, 0x4F): (
+            name: "time_update",
+            custom_type: Struct({
+                "world_age": I64,
+                "time_of_day": I64,
+            })
+        ),
+        (Client, Play, 0x50): (
+            name: "title",
+            custom_type: Struct({
+                "action": CustomType("title_action",Enum(
+                    variant: Prefixed(VarInt),
+                    variants: {
+                        (0,"set_title"): Struct({
+                            "title_text": String(32767),
+                        }),
+                        (1,"set_subtitle"): Struct({
+                            "subtitle_text": String(32767),
+                        }),
+                        (2,"set_action_bar"): Struct({
+                            "action_bar_text": String(32767),
+                        }),
+                        (3,"set_times_and_display"): Struct({
+                            "fade_in": I32,
+                            "stay": I32,
+                            "fade_out": I32,
+                        }),
+                        (4,"hide"): Unit,
+                        (5,"reset"): Unit,
+                    }
+                )),
+            })
+        ),
+        (Client, Play, 0x51): (
+            name: "entity_sound_effect",
+            custom_type: Struct({
+                "sound_id": VarInt,
+                "sound_category": VarInt,
+                "entity_id": VarInt,
+                "volume": F32,
+                "pitch": F32,
+            })
+        ),
+        (Client, Play, 0x52): (
+            name: "sound_effect",
+            custom_type: Struct({
+                "sound_id": VarInt,
+                "sound_category": VarInt,
+                "effect_position_x": I32,
+                "effect_position_y": I32,
+                "effect_position_z": I32,
+                "volume": F32,
+                "pitch": F32,
+            })
+        ),
+        (Client, Play, 0x53): (
+            name: "stop_sound",
+            custom_type: Struct({
+                "flags": I8,
+                "source": Option(VarInt),
+                "sound": Option(String(32767)),
+            })
+        ),
+        (Client, Play, 0x54): (
+            name: "player_list_header_and_footer",
+            custom_type: Struct({
+                "header": String(32767),
+                "footer": String(32767)
+            })
+        ),
+        (Client, Play, 0x55): (
+            name: "nbt_query_response",
+            custom_type: Struct({
+                "transaction_id": VarInt,
+                "nbt": Nbt
+            })
+        ),
+        (Client, Play, 0x56): (
+            name: "collect_item",
+            custom_type: Struct({
+                "collected_entity_id": VarInt,
+                "collector_entity_id": VarInt,
+                "pickup_item_count": VarInt
+            })
+        ),
+        (Client, Play, 0x57): (
+            name: "entity_teleport",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "x": F64,
+                "y": F64,
+                "z": F64,
+                "yaw": U8,
+                "pitch": U8,
+                "on_ground": Boolean
+            })
+        ),
+        (Client, Play, 0x58): (
+            name: "advancements",
+            custom_type: Struct({
+                "reset": Boolean,
+                "advancement_mapping": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("advancement_o",Struct({
+                        key: String(32767)
+                        advancement: CustomType("advancement",Struct({
+                            parent_id: Option(String(32767)),
+                            display_data: CustomType("advancement_display",Struct({
+                                title: String(32767),
+                                description: String(32767),
+                                icon: Shared("slot"),
+                                frame_type: CustomType("advancement_type",Enum(
+                                    variant: Prefixed(VarInt),
+                                    variants: {
+                                        (0,"task"): Unit,
+                                        (1,"challenge"): Unit,
+                                        (2,"goal"): Unit,
+                                    }
+                                )),
+                                flags: CustomType("advancement_flags", BitFlags(
+                                    type: I32,
+                                    flags: {
+                                        0x01: "has_background_texture",
+                                        0x02: "show_toast",
+                                        0x04: "hidden",
+                                    }
+                                )),
+                                background_texture: Option(String(32767)),
+                                x_coord: F32,
+                                t_coord: F32
+                            })),
+                            criteria: Array(
+                                length: Prefixed(VarInt),
+                                type: CustomType("advancement_criteria",Struct({
+                                    key: String(32767)
+                                }))
+                            ),
+                            requirements: Array(
+                                length: Prefixed(VarInt),
+                                type: Array(
+                                    length: Prefixed(VarInt),
+                                    type: String(32767)
+                                )
+                            )
+                        })
+                    }))
+                ),
+                "identifiers": Array(
+                    length: Prefixed(VarInt),
+                    type: String(32767)
+                ),
+                "progress_mapping": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("advancement_progress_mapping",Struct({
+                        key: String(32767),
+                        value: Array(
+                            length: Prefixed(VarInt),
+                            type: CustomType("progress_mapping",Struct({
+                                "criterion_identifier": String(32767),
+                                "criterion_progress": Option(I64)
+                            }))
+                        )
+                    }))
+                )
+            })
+        ),
+        (Client, Play, 0x59): (
+            name: "entity_properties",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "property": Array(
+                    length: Prefixed(I32),
+                    type: CustomType("entity_property",Struct({
+                        key: String(64),
+                        value: F64,
+                        number_of_modifiers: VarInt,
+                        modifiers: Array(
+                            length: Prefixed(VarInt),
+                            type: CustomType("entity_modifiers",Struct({
+                                uuid: Shared("uuid"),
+                                amount: F64,
+                                operation: I8
+                            }))
+                        )
+                    }))
+                )
+            })
+        ),
+        (Client, Play, 0x5A): (
+            name: "entity_effect",
+            custom_type: Struct({
+                "entity_id": VarInt,
+                "effect_id": I8,
+                "amplifier": I8,
+                "duration": VarInt,
+                "flags": CustomType("entity_effect_flags", BitFlags(
+                    type: I32,
+                    flags: {
+                        0x01: "is_ambient",
+                        0x02: "show_particles",
+                        0x04: "show_icon",
+                    }
+                ))
+            })
+        ),
+        (Client, Play, 0x5B): (
+            name: "declare_recipes",
+            custom_type: Struct({
+                "recipes": Array(
+                    length: Prefixed(VarInt),
+                    type: CustomType("recipe", Struct({
+                        recipe_id: String(32767)
+                        data: CustomType("data", Enum(
+                            variant: Prefixed(String(32)),
+                            variants: {
+                                ("crafting_shapeless"): Struct({
+                                    group: String(128),
+                                    ingredients: Array(
+                                        length: Prefixed(VarInt),
+                                        type: Array(
+                                            length: Prefixed(VarInt),
+                                            type: Shared("slot")
+                                        )
+                                    ),
+                                    result: Shared("slot")
+
+                                }),
+                                ("crafting_shaped"): Struct({
+                                    width: VarInt,
+                                    height: VarInt,
+                                    group: String(128),
+                                    ingredients: Array(
+                                        length: Prefixed(VarInt),
+                                        type: Array(
+                                            length: Prefixed(VarInt),
+                                            type: Shared("slot")
+                                        )
+                                    ),
+                                    result: Shared("slot")
+
+                                }),
+                                ("crafting_special_armordye"): Unit,
+                                ("crafting_special_bookcloning"): Unit,
+                                ("crafting_special_mapcloning"): Unit,
+                                ("crafting_special_mapextending"): Unit,
+                                ("crafting_special_firework_rocket"): Unit,
+                                ("crafting_special_firework_star"): Unit,
+                                ("crafting_special_firework_star_fade"): Unit,
+                                ("crafting_special_repairitem"): Unit,
+                                ("crafting_special_tippedarrow"): Unit,
+                                ("crafting_special_bannerduplicate"): Unit,
+                                ("crafting_special_banneraddpattern"): Unit,
+                                ("crafting_special_shielddecoration"): Unit,
+                                ("crafting_special_shulkerboxcoloring"): Unit,
+                                ("smelting"): Struct({
+                                    group: String(128),
+                                    ingredients: Array(
+                                            length: Prefixed(VarInt),
+                                            type: Shared("slot")
+                                    ),
+                                    result: Shared("slot"),
+                                    experience: F32,
+                                    cooking_time: VarInt
+
+                                }),
+                            }
+                        ))
+                    }))
+                ),
+                
+            })
+        ),
+        (Client, Play, 0x5C): (
+            name: "tags",
+            custom_type: Struct({
+                "block_tags": Shared("tag"),
+                "item_tags": Shared("tag"),
+                "fluid_tags": Shared("tag"),
+                "entity_tags": Shared("tag"),
+            })
+        ),
+    },
         (Server, Play, 0x00): (
             name: "teleport_confirm",
             custom_type: Struct({
@@ -1127,7 +1713,7 @@
             custom_type: Struct({
                 "window_id": U8,
                 "slot": I16,
-                "button": Key(I8),
+                "button": I8,
                 "action_number": I16,
                 "mode": VarInt,
                 "clicked_item": Shared("slot"),

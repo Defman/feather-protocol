@@ -87,9 +87,9 @@ pub enum Type {
     String(#[serde(default)] u16),
     Nbt,
     Array {
+        length: ArrayLength,
         #[serde(rename = "type")]
         kind: Box<Type>,
-        length: ArrayLength,
     },
     Option(Box<Type>),
     CustomType(String, CustomType),

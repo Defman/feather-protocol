@@ -1,29 +1,53 @@
 use bytes::{Bytes, BytesMut};
+use std::marker::PhantomData;
 use thiserror::Error;
 
-#[derive(Debug)]
-pub enum Direction {
-    Client,
-    Server,
+pub mod direction {
+    pub trait Direction: std::fmt::Debug + 'static {}
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Client;
+    impl Direction for Client {}
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Server;
+    impl Direction for Server {}
 }
 
-#[derive(Debug)]
-pub enum Stage {
-    Handshaking,
-    Status,
-    Login,
-    Play,
+pub mod stage {
+    pub trait Stage: std::fmt::Debug + 'static {}
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Handshaking;
+    impl Stage for Handshaking {}
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Status;
+    impl Stage for Status {}
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Login;
+    impl Stage for Login {}
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Play;
+    impl Stage for Play {}
 }
+
+pub use direction::Direction;
+pub use stage::Stage;
 
 /// Represents a packet.
 pub trait Packet: Send + Sync + Sized {
     fn id(&self) -> u64;
     fn name(&self) -> &'static str;
-    fn direction(&self) -> Direction;
-    fn stage(&self) -> Stage;
 
     fn encode(&self, buf: &mut BytesMut) -> usize;
     fn decode(buf: &mut Bytes) -> Result<Self, DecodeError>;
+}
+
+pub trait State<D: Direction, S: Stage> {
+    type Packet: Packet;
+}
+
+pub trait Protocol: Sized + 'static {
+    fn version() -> u64;
+    fn minecraft_version() -> &'static str;
+    fn minecraft_major_version() -> &'static str;
 }
 
 #[derive(Error, Debug)]
@@ -32,30 +56,14 @@ pub enum DecodeError {
     TryRead(crate::types::Error),
     #[error("NonExistentPacket: ({direction:?}, {stage:?}, {id})")]
     NonExistentPacket {
-        direction: Direction, 
-        stage: Stage, 
-        id: u64
-    }
+        direction: PhantomData<dyn Direction>,
+        stage: PhantomData<dyn Direction>,
+        id: u64,
+    },
 }
 
 impl From<crate::types::Error> for DecodeError {
     fn from(err: crate::types::Error) -> Self {
         DecodeError::TryRead(err)
     }
-}
-
-
-pub trait Protocol: Sized + 'static {
-    type ServerBoundHandshakePacket: Packet;
-    type ClientBoundHandshakePacket: Packet;
-    type ServerBoundStatusPacket: Packet;
-    type ClientBoundStatusPacket: Packet; 
-    type ServerBoundLoginPacket: Packet; 
-    type ClientBoundLoginPacket: Packet; 
-    type ServerBoundPlayPacket: Packet; 
-    type ClientBoundPlayPacket: Packet;
-
-    fn version() -> u64;
-    fn minecraft_version() -> &'static str;
-    fn minecraft_major_version() -> &'static str;
 }
