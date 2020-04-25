@@ -31,17 +31,22 @@ pub mod stage {
 pub use direction::Direction;
 pub use stage::Stage;
 
+pub trait PacketEnum<D: Direction, S: Stage> {
+    fn packet_id(&self) -> u64;
+    fn packet_name(&self) -> &'static str;
+}
+
 /// Represents a packet.
-pub trait Packet: Send + Sync + Sized {
-    fn id(&self) -> u64;
-    fn name(&self) -> &'static str;
+pub trait Packet<D: Direction, S: Stage>: Send + Sync + Sized {
+    const ID: usize;
+    const NAME: &'static str;
 
     fn encode(&self, buf: &mut BytesMut) -> usize;
     fn decode(buf: &mut Bytes) -> Result<Self, DecodeError>;
 }
 
 pub trait State<D: Direction, S: Stage> {
-    type Packet: Packet;
+    type Packet: PacketEnum<D, S>;
 }
 
 pub trait Protocol: Sized + 'static {

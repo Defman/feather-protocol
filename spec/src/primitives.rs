@@ -49,24 +49,28 @@ pub struct ProtocolVersion(u64);
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct SharedTypeId(String);
-
-#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(transparent)]
 pub struct VariantName(String);
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[serde(transparent)]
 pub struct FieldName(String);
 
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[serde(transparent)]
+pub struct CustomTypeName(String);
+
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[serde(transparent)]
+pub struct SharedTypeId(String);
 
 wrap!(PacketId, u64);
 wrap!(PacketName, String);
 wrap!(MinecraftVersion, String);
 wrap!(ProtocolVersion, u64);
-wrap!(SharedTypeId, String);
 wrap!(VariantName, String);
 wrap!(FieldName, String);
+wrap!(CustomTypeName, String);
+wrap!(SharedTypeId, String);
 
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]

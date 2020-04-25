@@ -24,13 +24,13 @@ impl Validation for Protocol {
                 (
                     identifier.direction(),
                     identifier.stage(),
-                    packet.name.clone(),
+                    packet.name()
                 ),
                 identifier,
             ) {
                 bail!(
                     "The packet name \"{}\" for {:#X?} is already used by {:#X?}.",
-                    *packet.name,
+                    packet.name(),
                     identifier,
                     old_identifier
                 );
