@@ -4,130 +4,130 @@
         (Client, Status, 0): Struct(
             name: "response",
             fields: {
-                "json_lenght": VarInt,
-                "json_response": String(32767),
+                "json_lenght": Integer(VarInt),
+                "json_response": Primitive(String(32767)),
             },
         ),
         (Client, Status, 1): Struct(
             name: "pong",
             fields: {
-                "payload": I64,
+                "payload": Integer(I64),
             },
         ),
         (Client, Login, 0): Struct(
             name: "disconnect",
             fields: {
-                "reason": Shared("chat"),
+                "reason": Primitive(Shared("chat")),
             },
         ),
         (Client, Login, 1): Struct(
             name: "encryption_request",
             fields: {
-                "server_id": String(20),
-                "public_key": Array(
+                "server_id": Primitive(String(20)),
+                "public_key": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: U8,
-                ),
-                "verify_token": Array(
+                    field_type: Integer(U8),
+                )),
+                "verify_token": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: U8,
-                ),
+                    field_type: Integer(U8),
+                )),
             },
         ),
         (Client, Login, 2): Struct(
             name: "login_success",
             fields: {
-                "uuid": String(36),
-                "username": String(16),
+                "uuid": Primitive(String(36)),
+                "username": Primitive(String(16)),
             },
         ),
         (Client, Login, 3): Struct(
             name: "set_compression",
             fields: {
-                "threshold": VarInt,
+                "threshold": Integer(VarInt),
             },
         ),
         (Client, Login, 4): Struct(
             name: "login_plugin_request",
             fields: {
-                "message_id": VarInt,
-                "channel": Shared("identifier"),
-                "data": Array(
+                "message_id": Integer(VarInt),
+                "channel": Primitive(Shared("identifier")),
+                "data": Primitive(Array(
                     length: RemainingLength,
-                    type: U8,
-                ),
+                    field_type: Integer(U8),
+                )),
             },
         ),
         (Client, Play, 0): Struct(
             name: "spawn_entity",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "object_uuid": Uuid,
-                "type": VarInt,
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "pitch": U8,
-                "yaw": U8,
-                "data": I32,
-                "velocity_x": I16,
-                "velocity_y": I16,
-                "velocity_z": I16,
+                "entity_id": Primitive(Shared("entity_id")),
+                "object_uuid": Primitive(Uuid),
+                "type": Integer(VarInt),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "pitch": Integer(U8),
+                "yaw": Integer(U8),
+                "data": Integer(I32),
+                "velocity_x": Integer(I16),
+                "velocity_y": Integer(I16),
+                "velocity_z": Integer(I16),
             },
         ),
         (Client, Play, 1): Struct(
             name: "spawn_experience_orb",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "count": I16,
+                "entity_id": Primitive(Shared("entity_id")),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "count": Integer(I16),
             },
         ),
         (Client, Play, 2): Struct(
             name: "spawn_weather_entity",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "type": Enum(
+                "entity_id": Primitive(Shared("entity_id")),
+                "type": CustomType(Enum(
                     name: "type",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         1: Unit(
                             name: "thunderbolt",
                         ),
                     },
-                ),
-                "x": F64,
-                "y": F64,
-                "z": F64,
+                )),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
             },
         ),
         (Client, Play, 3): Struct(
             name: "spawn_living_entity",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "entity_uuid": Uuid,
-                "type": VarInt,
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "yaw": U16,
-                "pitch": U16,
-                "head_pitch": U16,
-                "velocity_x": I16,
-                "velocity_y": I16,
-                "velocity_z": I16,
+                "entity_id": Primitive(Shared("entity_id")),
+                "entity_uuid": Primitive(Uuid),
+                "type": Integer(VarInt),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "yaw": Integer(U16),
+                "pitch": Integer(U16),
+                "head_pitch": Integer(U16),
+                "velocity_x": Integer(I16),
+                "velocity_y": Integer(I16),
+                "velocity_z": Integer(I16),
             },
         ),
         (Client, Play, 4): Struct(
             name: "spawn_painting",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "entity_uuid": Uuid,
-                "motive": Enum(
+                "entity_id": Primitive(Shared("entity_id")),
+                "entity_uuid": Primitive(Uuid),
+                "motive": CustomType(Enum(
                     name: "motive",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "kebab",
@@ -208,11 +208,11 @@
                             name: "donkey_kong",
                         ),
                     },
-                ),
-                "location": Shared("position"),
-                "direction": Enum(
+                )),
+                "location": Primitive(Shared("position")),
+                "direction": CustomType(Enum(
                     name: "direction",
-                    variant: Prefixed(U8),
+                    variant: Integer(U8),
                     variants: {
                         0: Unit(
                             name: "south",
@@ -227,28 +227,28 @@
                             name: "east",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 5): Struct(
             name: "spawn_player",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "player_uuid": Uuid,
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "yaw": U8,
-                "pitch": U8,
+                "entity_id": Primitive(Shared("entity_id")),
+                "player_uuid": Primitive(Uuid),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "yaw": Integer(U8),
+                "pitch": Integer(U8),
             },
         ),
         (Client, Play, 6): Struct(
             name: "entity_animation",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "animation": Enum(
+                "entity_id": Primitive(Shared("entity_id")),
+                "animation": CustomType(Enum(
                     name: "animation",
-                    variant: Prefixed(U8),
+                    variant: Integer(U8),
                     variants: {
                         0: Unit(
                             name: "swing_main_arm",
@@ -269,33 +269,33 @@
                             name: "magic_critical_effect",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 7): Struct(
             name: "statistics",
             fields: {
-                "statistics": Array(
+                "statistics": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "statistic",
                         fields: {
-                            "category_id": VarInt,
-                            "statistic_id": VarInt,
+                            "category_id": Integer(VarInt),
+                            "statistic_id": Integer(VarInt),
                         },
-                    ),
-                ),
-                "value": VarInt,
+                    )),
+                )),
+                "value": Integer(VarInt),
             },
         ),
         (Client, Play, 8): Struct(
             name: "acknowledge_player_digging",
             fields: {
-                "location": Shared("position"),
-                "block": VarInt,
-                "status": Enum(
+                "location": Primitive(Shared("position")),
+                "block": Integer(VarInt),
+                "status": CustomType(Enum(
                     name: "status",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "started_digging",
@@ -307,66 +307,66 @@
                             name: "finished_digging",
                         ),
                     },
-                ),
-                "successful": Boolean,
+                )),
+                "successful": Primitive(Boolean),
             },
         ),
         (Client, Play, 9): Struct(
             name: "block_break_animation",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "location": Shared("position"),
-                "destroy_stage": I8,
+                "entity_id": Primitive(Shared("entity_id")),
+                "location": Primitive(Shared("position")),
+                "destroy_stage": Integer(I8),
             },
         ),
         (Client, Play, 10): Struct(
             name: "block_entity_data",
             fields: {
-                "location": Shared("position"),
-                "action": U8,
-                "nbt_data": Shared("nbt_tag"),
+                "location": Primitive(Shared("position")),
+                "action": Integer(U8),
+                "nbt_data": Primitive(Shared("nbt_tag")),
             },
         ),
         (Client, Play, 11): Struct(
             name: "block_action",
             fields: {
-                "location": Shared("position"),
-                "action_id": U8,
-                "action_param": U8,
-                "block_type": VarInt,
+                "location": Primitive(Shared("position")),
+                "action_id": Integer(U8),
+                "action_param": Integer(U8),
+                "block_type": Integer(VarInt),
             },
         ),
         (Client, Play, 12): Struct(
             name: "block_change",
             fields: {
-                "location": Shared("position"),
-                "block_id": VarInt,
+                "location": Primitive(Shared("position")),
+                "block_id": Integer(VarInt),
             },
         ),
         (Client, Play, 13): Struct(
             name: "boss_bar",
             fields: {
-                "uuid": Uuid,
-                "action": Enum(
+                "uuid": Primitive(Uuid),
+                "action": CustomType(Enum(
                     name: "action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Struct(
                             name: "add",
                             fields: {
-                                "title": Shared("chat"),
-                                "health": F32,
-                                "color": Shared("color"),
-                                "division": Shared("division"),
-                                "flags": BitFlags(
+                                "title": Primitive(Shared("chat")),
+                                "health": Float(F32),
+                                "color": Primitive(Shared("color")),
+                                "division": Primitive(Shared("division")),
+                                "flags": CustomType(BitFlags(
                                     name: "flags",
-                                    type: U8,
+                                    field_type: U8,
                                     flags: {
                                         1: "darken_sky",
                                         2: "dragon_bar",
                                         4: "create_fog",
                                     },
-                                ),
+                                )),
                             },
                         ),
                         1: Unit(
@@ -375,46 +375,46 @@
                         2: Struct(
                             name: "update_health",
                             fields: {
-                                "health": F32,
+                                "health": Float(F32),
                             },
                         ),
                         3: Struct(
                             name: "update_title",
                             fields: {
-                                "title": Shared("chat"),
+                                "title": Primitive(Shared("chat")),
                             },
                         ),
                         4: Struct(
                             name: "update_style",
                             fields: {
-                                "color": Shared("color"),
-                                "dividers": Shared("division"),
+                                "color": Primitive(Shared("color")),
+                                "dividers": Primitive(Shared("division")),
                             },
                         ),
                         5: Struct(
                             name: "update_flags",
                             fields: {
-                                "flags": U8,
+                                "flags": Integer(U8),
                             },
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 14): Struct(
             name: "server_difficulty",
             fields: {
-                "difficulty": Shared("difficulty"),
-                "difficulty_locked": Boolean,
+                "difficulty": Primitive(Shared("difficulty")),
+                "difficulty_locked": Primitive(Boolean),
             },
         ),
         (Client, Play, 15): Struct(
             name: "chat_message",
             fields: {
-                "json_data": Shared("chat"),
-                "position": Enum(
+                "json_data": Primitive(Shared("chat")),
+                "position": CustomType(Enum(
                     name: "position",
-                    variant: Prefixed(I8),
+                    variant: Integer(I8),
                     variants: {
                         0: Unit(
                             name: "chat",
@@ -426,123 +426,123 @@
                             name: "game_info",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 16): Struct(
             name: "multi_block_change",
             fields: {
-                "chunk_x": I32,
-                "chunk_z": I32,
-                "record": Array(
+                "chunk_x": Integer(I32),
+                "chunk_z": Integer(I32),
+                "record": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "record",
                         fields: {
-                            "horizontal_position": U8,
-                            "y_coordinate": U8,
-                            "block_id": VarInt,
+                            "horizontal_position": Integer(U8),
+                            "y_coordinate": Integer(U8),
+                            "block_id": Integer(VarInt),
                         },
-                    ),
-                ),
+                    )),
+                )),
             },
         ),
         (Client, Play, 17): Struct(
             name: "tab_complete",
             fields: {
-                "id": VarInt,
-                "start": VarInt,
-                "lentgh": VarInt,
-                "count": VarInt,
-                "matches": Array(
+                "id": Integer(VarInt),
+                "start": Integer(VarInt),
+                "lentgh": Integer(VarInt),
+                "count": Integer(VarInt),
+                "matches": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "matches",
                         fields: {
-                            "match": String(32767),
-                            "tooltip": Option(Shared("chat")),
+                            "match": Primitive(String(32767)),
+                            "tooltip": Primitive(Option(Primitive(Shared("chat")))),
                         },
-                    ),
-                ),
+                    )),
+                )),
             },
         ),
         (Client, Play, 18): Struct(
             name: "declare_command",
             fields: {
-                "count": VarInt,
-                "nodes": VarInt,
-                "length": Array(
+                "count": Integer(VarInt),
+                "nodes": Integer(VarInt),
+                "length": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Shared("node"),
-                ),
-                "root_index": VarInt,
+                    field_type: Primitive(Shared("node")),
+                )),
+                "root_index": Integer(VarInt),
             },
         ),
         (Client, Play, 19): Struct(
             name: "window_confirmation",
             fields: {
-                "window_id": I8,
-                "action_number": U16,
-                "accepted": Boolean,
+                "window_id": Integer(I8),
+                "action_number": Integer(U16),
+                "accepted": Primitive(Boolean),
             },
         ),
         (Client, Play, 20): Struct(
             name: "close_window",
             fields: {
-                "window_id": U8,
+                "window_id": Integer(U8),
             },
         ),
         (Client, Play, 21): Struct(
             name: "window_items",
             fields: {
-                "window_id": U8,
-                "count": I16,
-                "slot_data": Array(
+                "window_id": Integer(U8),
+                "count": Integer(I16),
+                "slot_data": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Shared("slot"),
-                ),
+                    field_type: Primitive(Shared("slot")),
+                )),
             },
         ),
         (Client, Play, 22): Struct(
             name: "window_property",
             fields: {
-                "window_id": U8,
-                "property": I16,
-                "value": I16,
+                "window_id": Integer(U8),
+                "property": Integer(I16),
+                "value": Integer(I16),
             },
         ),
         (Client, Play, 23): Struct(
             name: "set_slot",
             fields: {
-                "window_id": U8,
-                "slot": I16,
-                "slot_data": Shared("slot"),
+                "window_id": Integer(U8),
+                "slot": Integer(I16),
+                "slot_data": Primitive(Shared("slot")),
             },
         ),
         (Client, Play, 24): Struct(
             name: "set_cooldown",
             fields: {
-                "item_id": VarInt,
-                "cooldown_ticks": VarInt,
+                "item_id": Integer(VarInt),
+                "cooldown_ticks": Integer(VarInt),
             },
         ),
         (Client, Play, 25): Struct(
             name: "plugin_message",
             fields: {
-                "channel": Shared("identifier"),
-                "data": Array(
+                "channel": Primitive(Shared("identifier")),
+                "data": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: I8,
-                ),
+                    field_type: Integer(I8),
+                )),
             },
         ),
         (Client, Play, 26): Struct(
             name: "named_sound_effect",
             fields: {
-                "sound_name": Shared("identifier"),
-                "sound_category": Enum(
+                "sound_name": Primitive(Shared("identifier")),
+                "sound_category": CustomType(Enum(
                     name: "sound_category",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "master",
@@ -575,64 +575,64 @@
                             name: "voice",
                         ),
                     },
-                ),
-                "effect_position_x": I32,
-                "effect_position_y": I32,
-                "effect_position_z": I32,
-                "volume": F32,
-                "pitch": F32,
+                )),
+                "effect_position_x": Integer(I32),
+                "effect_position_y": Integer(I32),
+                "effect_position_z": Integer(I32),
+                "volume": Float(F32),
+                "pitch": Float(F32),
             },
         ),
         (Client, Play, 27): Struct(
             name: "disconnect",
             fields: {
-                "reason": Shared("chat"),
+                "reason": Primitive(Shared("chat")),
             },
         ),
         (Client, Play, 28): Struct(
             name: "entity_status",
             fields: {
-                "entity_id": I32,
-                "entity_status": U8,
+                "entity_id": Integer(I32),
+                "entity_status": Integer(U8),
             },
         ),
         (Client, Play, 29): Struct(
             name: "explosion",
             fields: {
-                "x": F32,
-                "y": F32,
-                "z": F32,
-                "strength": F32,
-                "record_count": I32,
-                "records": Array(
+                "x": Float(F32),
+                "y": Float(F32),
+                "z": Float(F32),
+                "strength": Float(F32),
+                "record_count": Integer(I32),
+                "records": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "relative_location",
                         fields: {
-                            "x": I8,
-                            "y": I8,
-                            "z": I8,
+                            "x": Integer(I8),
+                            "y": Integer(I8),
+                            "z": Integer(I8),
                         },
-                    ),
-                ),
-                "player_motion_x": F32,
-                "player_motion_y": F32,
-                "player_motion_z": F32,
+                    )),
+                )),
+                "player_motion_x": Float(F32),
+                "player_motion_y": Float(F32),
+                "player_motion_z": Float(F32),
             },
         ),
         (Client, Play, 30): Struct(
             name: "unload_chunk",
             fields: {
-                "chunk_x": I32,
-                "chunk_y": I32,
+                "chunk_x": Integer(I32),
+                "chunk_y": Integer(I32),
             },
         ),
         (Client, Play, 31): Struct(
             name: "change_game_state",
             fields: {
-                "reason": Enum(
+                "reason": CustomType(Enum(
                     name: "sound_category",
-                    variant: Prefixed(U8),
+                    variant: Integer(U8),
                     variants: {
                         0: Unit(
                             name: "invalid_bed",
@@ -671,102 +671,102 @@
                             name: "enable_respawn_screen",
                         ),
                     },
-                ),
-                "value": F32,
+                )),
+                "value": Float(F32),
             },
         ),
         (Client, Play, 32): Struct(
             name: "open_horse_window",
             fields: {
-                "window_id": I8,
-                "number_of_slots": VarInt,
-                "entity_id": I32,
+                "window_id": Integer(I8),
+                "number_of_slots": Integer(VarInt),
+                "entity_id": Integer(I32),
             },
         ),
         (Client, Play, 33): Struct(
             name: "keep_alive",
             fields: {
-                "keep_alive_id": I64,
+                "keep_alive_id": Integer(I64),
             },
         ),
         (Client, Play, 34): Struct(
             name: "chunk_data",
             fields: {
-                "chunk_x": I32,
-                "chunk_z": I32,
-                "full_chunk": Boolean,
-                "primary_bit_mask": VarInt,
-                "heightmaps": Nbt,
-                "biomes": Option(Array(
+                "chunk_x": Integer(I32),
+                "chunk_z": Integer(I32),
+                "full_chunk": Primitive(Boolean),
+                "primary_bit_mask": Integer(VarInt),
+                "heightmaps": Primitive(Nbt),
+                "biomes": Primitive(Option(Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: I32,
+                    field_type: Integer(I32),
+                )))),
+                "data": Primitive(Array(
+                    length: Prefixed(VarInt),
+                    field_type: Integer(I8),
                 )),
-                "data": Array(
+                "number_of_block_entities": Integer(VarInt),
+                "block_entities": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: I8,
-                ),
-                "number_of_block_entities": VarInt,
-                "block_entities": Array(
-                    length: Prefixed(VarInt),
-                    type: Nbt,
-                ),
+                    field_type: Primitive(Nbt),
+                )),
             },
         ),
         (Client, Play, 35): Struct(
             name: "effect",
             fields: {
-                "effect_id": I32,
-                "location": Shared("position"),
-                "data": I32,
-                "disable_relative_volume": Boolean,
+                "effect_id": Integer(I32),
+                "location": Primitive(Shared("position")),
+                "data": Integer(I32),
+                "disable_relative_volume": Primitive(Boolean),
             },
         ),
         (Client, Play, 36): Struct(
             name: "particle",
             fields: {
-                "particle_id": I32,
-                "long_distance": Boolean,
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "offset_x": F32,
-                "offset_y": F32,
-                "offset_z": F32,
-                "particle_data": F32,
-                "particle_count": I32,
-                "data": I32,
+                "particle_id": Integer(I32),
+                "long_distance": Primitive(Boolean),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "offset_x": Float(F32),
+                "offset_y": Float(F32),
+                "offset_z": Float(F32),
+                "particle_data": Float(F32),
+                "particle_count": Integer(I32),
+                "data": Integer(I32),
             },
         ),
         (Client, Play, 37): Struct(
             name: "update_light",
             fields: {
-                "chunk_x": VarInt,
-                "chunk_z": VarInt,
-                "sky_light_mask": VarInt,
-                "block_light_mask": VarInt,
-                "empty_sky_light_mask": VarInt,
-                "empty_block_light_mask": VarInt,
-                "sky_light_arrays": Array(
+                "chunk_x": Integer(VarInt),
+                "chunk_z": Integer(VarInt),
+                "sky_light_mask": Integer(VarInt),
+                "block_light_mask": Integer(VarInt),
+                "empty_sky_light_mask": Integer(VarInt),
+                "empty_block_light_mask": Integer(VarInt),
+                "sky_light_arrays": Primitive(Array(
                     length: FixedLength(2048),
-                    type: I8,
-                ),
-                "block_light_arrays": Array(
+                    field_type: Integer(I8),
+                )),
+                "block_light_arrays": Primitive(Array(
                     length: FixedLength(2048),
-                    type: I8,
-                ),
+                    field_type: Integer(I8),
+                )),
             },
         ),
         (Client, Play, 38): Struct(
             name: "join_game",
             fields: {
-                "entity_id": I32,
-                "gamemode": Shared("gamemode"),
-                "dimension": Shared("dimension"),
-                "hashed_seed": I64,
-                "max_players": U8,
-                "level_type": Enum(
+                "entity_id": Integer(I32),
+                "gamemode": Primitive(Shared("gamemode")),
+                "dimension": Primitive(Shared("dimension")),
+                "hashed_seed": Integer(I64),
+                "max_players": Integer(U8),
+                "level_type": CustomType(Enum(
                     name: "level_type",
-                    variant: Prefixed(String(16)),
+                    variant: Primitive(String(16)),
                     variants: {
                         "amplified": Unit(
                             name: "amplified",
@@ -790,125 +790,125 @@
                             name: "largeBiomes",
                         ),
                     },
-                ),
-                "view_distance": VarInt,
-                "reduced_debug_info": Boolean,
-                "enable_respawn_screen": Boolean,
+                )),
+                "view_distance": Integer(VarInt),
+                "reduced_debug_info": Primitive(Boolean),
+                "enable_respawn_screen": Primitive(Boolean),
             },
         ),
         (Client, Play, 39): Struct(
             name: "map_data",
             fields: {
-                "map_id": VarInt,
-                "scale": I8,
-                "tracking_position": Boolean,
-                "locked": Boolean,
-                "icon_count": VarInt,
-                "icon": Array(
+                "map_id": Integer(VarInt),
+                "scale": Integer(I8),
+                "tracking_position": Primitive(Boolean),
+                "locked": Primitive(Boolean),
+                "icon_count": Integer(VarInt),
+                "icon": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "icon",
                         fields: {
-                            "type": VarInt,
-                            "x": I8,
-                            "z": I8,
-                            "direction": I8,
-                            "display_name": Option(Shared("chat")),
+                            "type": Integer(VarInt),
+                            "x": Integer(I8),
+                            "z": Integer(I8),
+                            "direction": Integer(I8),
+                            "display_name": Primitive(Option(Primitive(Shared("chat")))),
                         },
-                    ),
-                ),
-                "columns": U8,
-                "rows": Option(U8),
-                "x": Option(U8),
-                "z": Option(U8),
-                "data": Option(Array(
-                    length: Prefixed(VarInt),
-                    type: U8,
+                    )),
                 )),
+                "columns": Integer(U8),
+                "rows": Primitive(Option(Integer(U8))),
+                "x": Primitive(Option(Integer(U8))),
+                "z": Primitive(Option(Integer(U8))),
+                "data": Primitive(Option(Primitive(Array(
+                    length: Prefixed(VarInt),
+                    field_type: Integer(U8),
+                )))),
             },
         ),
         (Client, Play, 40): Struct(
             name: "trade_list",
             fields: {
-                "window_id": VarInt,
-                "size": I8,
-                "trades": Array(
+                "window_id": Integer(VarInt),
+                "size": Integer(I8),
+                "trades": Primitive(Array(
                     length: Prefixed(I8),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "trade",
                         fields: {
-                            "input_item_1": Shared("slot"),
-                            "output_item": Shared("slot"),
-                            "input_item_2": Option(Shared("slot")),
-                            "trade_disabled": Boolean,
-                            "number_of_trade_uses": I32,
-                            "maximum_number_of_trade_uses": I32,
-                            "xp": I32,
-                            "special_price": I32,
-                            "price_multiplier": F32,
-                            "demand": I32,
+                            "input_item_1": Primitive(Shared("slot")),
+                            "output_item": Primitive(Shared("slot")),
+                            "input_item_2": Primitive(Option(Primitive(Shared("slot")))),
+                            "trade_disabled": Primitive(Boolean),
+                            "number_of_trade_uses": Integer(I32),
+                            "maximum_number_of_trade_uses": Integer(I32),
+                            "xp": Integer(I32),
+                            "special_price": Integer(I32),
+                            "price_multiplier": Float(F32),
+                            "demand": Integer(I32),
                         },
-                    ),
-                ),
-                "villager_level": VarInt,
-                "experience": VarInt,
-                "is_regular_villager": Boolean,
-                "can_restock": Boolean,
+                    )),
+                )),
+                "villager_level": Integer(VarInt),
+                "experience": Integer(VarInt),
+                "is_regular_villager": Primitive(Boolean),
+                "can_restock": Primitive(Boolean),
             },
         ),
         (Client, Play, 41): Struct(
             name: "entity_position",
             fields: {
-                "entity_id": VarInt,
-                "delta_x": I16,
-                "delta_y": I16,
-                "delta_z": I16,
-                "on_ground": Boolean,
+                "entity_id": Integer(VarInt),
+                "delta_x": Integer(I16),
+                "delta_y": Integer(I16),
+                "delta_z": Integer(I16),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Client, Play, 42): Struct(
             name: "entity_position_and_rotation",
             fields: {
-                "entity_id": VarInt,
-                "delta_x": I16,
-                "delta_y": I16,
-                "delta_z": I16,
-                "yaw": U8,
-                "pitch": U8,
-                "on_ground": Boolean,
+                "entity_id": Integer(VarInt),
+                "delta_x": Integer(I16),
+                "delta_y": Integer(I16),
+                "delta_z": Integer(I16),
+                "yaw": Integer(U8),
+                "pitch": Integer(U8),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Client, Play, 43): Struct(
             name: "entity_rotation",
             fields: {
-                "entity_id": VarInt,
-                "yaw": U8,
-                "pitch": U8,
-                "on_ground": Boolean,
+                "entity_id": Integer(VarInt),
+                "yaw": Integer(U8),
+                "pitch": Integer(U8),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Client, Play, 44): Struct(
             name: "entity_movement",
             fields: {
-                "entity_id": VarInt,
+                "entity_id": Integer(VarInt),
             },
         ),
         (Client, Play, 45): Struct(
             name: "vehicle_move",
             fields: {
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "yaw": F32,
-                "pitch": F32,
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "yaw": Float(F32),
+                "pitch": Float(F32),
             },
         ),
         (Client, Play, 46): Struct(
             name: "open_book",
             fields: {
-                "hand": Enum(
+                "hand": CustomType(Enum(
                     name: "hand",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "main_hand",
@@ -917,52 +917,52 @@
                             name: "off_hand",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 47): Struct(
             name: "open_window",
             fields: {
-                "window_id": VarInt,
-                "window_type": VarInt,
-                "window_title": Shared("chat"),
+                "window_id": Integer(VarInt),
+                "window_type": Integer(VarInt),
+                "window_title": Primitive(Shared("chat")),
             },
         ),
         (Client, Play, 48): Struct(
             name: "open_sign_editor",
             fields: {
-                "location": Shared("position"),
+                "location": Primitive(Shared("position")),
             },
         ),
         (Client, Play, 49): Struct(
             name: "craft_recipe_response",
             fields: {
-                "window_id": I8,
-                "recipe": String(32767),
+                "window_id": Integer(I8),
+                "recipe": Primitive(String(32767)),
             },
         ),
         (Client, Play, 50): Struct(
             name: "player_abilities",
             fields: {
-                "flags": BitFlags(
+                "flags": CustomType(BitFlags(
                     name: "player_abilities",
-                    type: U8,
+                    field_type: U8,
                     flags: {
                         1: "invulnerable",
                         2: "flying",
                         4: "allow_flying",
                         8: "creative_mode",
                     },
-                ),
-                "recipe": String(32767),
+                )),
+                "recipe": Primitive(String(32767)),
             },
         ),
         (Client, Play, 51): Struct(
             name: "combat_event",
             fields: {
-                "event": Enum(
+                "event": CustomType(Enum(
                     name: "combat_event",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "enter_combat",
@@ -970,212 +970,212 @@
                         1: Struct(
                             name: "end_combat",
                             fields: {
-                                "duration": VarInt,
-                                "entity_id": I32,
+                                "duration": Integer(VarInt),
+                                "entity_id": Integer(I32),
                             },
                         ),
                         2: Struct(
                             name: "entity_dead",
                             fields: {
-                                "player_id": VarInt,
-                                "entity_id": I32,
-                                "message": Shared("chat"),
+                                "player_id": Integer(VarInt),
+                                "entity_id": Integer(I32),
+                                "message": Primitive(Shared("chat")),
                             },
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 53): Struct(
             name: "face_player",
             fields: {
-                "feet_eyes": Shared("feet_eyes"),
-                "target_x": F64,
-                "target_y": F64,
-                "target_z": F64,
-                "is_entity": Boolean,
-                "entity_id": Option(VarInt),
-                "entity_feet_eyes": Option(Shared("feet_eyes")),
+                "feet_eyes": Primitive(Shared("feet_eyes")),
+                "target_x": Float(F64),
+                "target_y": Float(F64),
+                "target_z": Float(F64),
+                "is_entity": Primitive(Boolean),
+                "entity_id": Primitive(Option(Integer(VarInt))),
+                "entity_feet_eyes": Primitive(Option(Primitive(Shared("feet_eyes")))),
             },
         ),
         (Client, Play, 54): Struct(
             name: "player_position_and_look",
             fields: {
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "yaw": F32,
-                "pitch": F32,
-                "flags": BitFlags(
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "yaw": Float(F32),
+                "pitch": Float(F32),
+                "flags": CustomType(BitFlags(
                     name: "flags",
-                    type: U8,
+                    field_type: U8,
                     flags: {
                         1: "x",
                         2: "z",
                         4: "y",
                     },
-                ),
-                "teleport_id": VarInt,
+                )),
+                "teleport_id": Integer(VarInt),
             },
         ),
         (Client, Play, 56): Struct(
             name: "destroy_entities",
             fields: {
-                "count": VarInt,
-                "entity_ids": Array(
+                "count": Integer(VarInt),
+                "entity_ids": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: VarInt,
-                ),
+                    field_type: Integer(VarInt),
+                )),
             },
         ),
         (Client, Play, 57): Struct(
             name: "remove_entity_effect",
             fields: {
-                "entity_id": VarInt,
-                "effect_id": I8,
+                "entity_id": Integer(VarInt),
+                "effect_id": Integer(I8),
             },
         ),
         (Client, Play, 58): Struct(
             name: "resource_pack_send",
             fields: {
-                "url": String(32767),
-                "hash": String(40),
+                "url": Primitive(String(32767)),
+                "hash": Primitive(String(40)),
             },
         ),
         (Client, Play, 59): Struct(
             name: "respawn",
             fields: {
-                "dimension": String(32767),
-                "hashed_seed": F64,
-                "gamemode": Shared("gamemode"),
-                "level_type": String(16),
+                "dimension": Primitive(String(32767)),
+                "hashed_seed": Float(F64),
+                "gamemode": Primitive(Shared("gamemode")),
+                "level_type": Primitive(String(16)),
             },
         ),
         (Client, Play, 60): Struct(
             name: "entity_head_look",
             fields: {
-                "entity_id": VarInt,
-                "head_yaw": U8,
+                "entity_id": Integer(VarInt),
+                "head_yaw": Integer(U8),
             },
         ),
         (Client, Play, 61): Struct(
             name: "select_advancement_tab",
             fields: {
-                "identifier": Option(String(32767)),
+                "identifier": Primitive(Option(Primitive(String(32767)))),
             },
         ),
         (Client, Play, 62): Struct(
             name: "world_border",
             fields: {
-                "action": Enum(
+                "action": CustomType(Enum(
                     name: "world_border_action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Struct(
                             name: "set_size",
                             fields: {
-                                "diameter": F64,
+                                "diameter": Float(F64),
                             },
                         ),
                         1: Struct(
                             name: "lerp_size",
                             fields: {
-                                "old_diameter": F64,
-                                "new_diameter": F64,
-                                "speed": VarLong,
+                                "old_diameter": Float(F64),
+                                "new_diameter": Float(F64),
+                                "speed": Integer(VarLong),
                             },
                         ),
                         2: Struct(
                             name: "set_center",
                             fields: {
-                                "x": F64,
-                                "z": F64,
+                                "x": Float(F64),
+                                "z": Float(F64),
                             },
                         ),
                         3: Struct(
                             name: "intitialize",
                             fields: {
-                                "x": F64,
-                                "z": F64,
-                                "old_diameter": F64,
-                                "new_diameter": F64,
-                                "speed": VarLong,
-                                "portal_teleport_boundary": VarInt,
-                                "warning_time": VarInt,
-                                "warning_blocks": VarInt,
+                                "x": Float(F64),
+                                "z": Float(F64),
+                                "old_diameter": Float(F64),
+                                "new_diameter": Float(F64),
+                                "speed": Integer(VarLong),
+                                "portal_teleport_boundary": Integer(VarInt),
+                                "warning_time": Integer(VarInt),
+                                "warning_blocks": Integer(VarInt),
                             },
                         ),
                         4: Struct(
                             name: "set_warning_time",
                             fields: {
-                                "warning_time": VarInt,
+                                "warning_time": Integer(VarInt),
                             },
                         ),
                         5: Struct(
                             name: "set_warning_blocks",
                             fields: {
-                                "warning_blocks": VarInt,
+                                "warning_blocks": Integer(VarInt),
                             },
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 63): Struct(
             name: "camera",
             fields: {
-                "camera_id": VarInt,
+                "camera_id": Integer(VarInt),
             },
         ),
         (Client, Play, 64): Struct(
             name: "held_item_change",
             fields: {
-                "slot": I8,
+                "slot": Integer(I8),
             },
         ),
         (Client, Play, 65): Struct(
             name: "update_view_position",
             fields: {
-                "chunk_x": VarInt,
-                "chunk_y": VarInt,
+                "chunk_x": Integer(VarInt),
+                "chunk_y": Integer(VarInt),
             },
         ),
         (Client, Play, 66): Struct(
             name: "update_view_distance",
             fields: {
-                "view_distance": VarInt,
+                "view_distance": Integer(VarInt),
             },
         ),
         (Client, Play, 67): Struct(
             name: "display_scoreboard",
             fields: {
-                "position": I8,
-                "score_namme": String(16),
+                "position": Integer(I8),
+                "score_namme": Primitive(String(16)),
             },
         ),
         (Client, Play, 69): Struct(
             name: "attach_entity",
             fields: {
-                "attached_entity_id": I32,
-                "holding_entity_id": I32,
+                "attached_entity_id": Integer(I32),
+                "holding_entity_id": Integer(I32),
             },
         ),
         (Client, Play, 70): Struct(
             name: "entity_velocity",
             fields: {
-                "entity_id": VarInt,
-                "velocity_x": I16,
-                "velocity_y": I16,
-                "velocity_z": I16,
+                "entity_id": Integer(VarInt),
+                "velocity_x": Integer(I16),
+                "velocity_y": Integer(I16),
+                "velocity_z": Integer(I16),
             },
         ),
         (Client, Play, 71): Struct(
             name: "entity_equipement",
             fields: {
-                "entity_id": VarInt,
-                "slot": Enum(
+                "entity_id": Integer(VarInt),
+                "slot": CustomType(Enum(
                     name: "equipement_slot",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "main_hand",
@@ -1196,33 +1196,33 @@
                             name: "helmet",
                         ),
                     },
-                ),
-                "item": Shared("slot"),
+                )),
+                "item": Primitive(Shared("slot")),
             },
         ),
         (Client, Play, 72): Struct(
             name: "set_experience",
             fields: {
-                "experience_bar": F32,
-                "level": VarInt,
-                "total_experience": VarInt,
+                "experience_bar": Float(F32),
+                "level": Integer(VarInt),
+                "total_experience": Integer(VarInt),
             },
         ),
         (Client, Play, 73): Struct(
             name: "update_health",
             fields: {
-                "health": F32,
-                "food": VarInt,
-                "food_stauration": F32,
+                "health": Float(F32),
+                "food": Integer(VarInt),
+                "food_stauration": Float(F32),
             },
         ),
         (Client, Play, 74): Struct(
             name: "scoreboard_objective",
             fields: {
-                "objective_name": String(16),
-                "mode": Enum(
+                "objective_name": Primitive(String(16)),
+                "mode": CustomType(Enum(
                     name: "scoreboard_action",
-                    variant: Prefixed(I8),
+                    variant: Integer(I8),
                     variants: {
                         0: Unit(
                             name: "create",
@@ -1234,11 +1234,11 @@
                             name: "update",
                         ),
                     },
-                ),
-                "objective_value": Option(String(32767)),
-                "type": Option(Enum(
+                )),
+                "objective_value": Primitive(Option(Primitive(String(32767)))),
+                "type": Primitive(Option(CustomType(Enum(
                     name: "scoreboard_mode",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "integer",
@@ -1247,44 +1247,44 @@
                             name: "hearts",
                         ),
                     },
-                )),
+                )))),
             },
         ),
         (Client, Play, 75): Struct(
             name: "set_passengers",
             fields: {
-                "entity_id": VarInt,
-                "passenger_count": VarInt,
-                "passengers": Array(
+                "entity_id": Integer(VarInt),
+                "passenger_count": Integer(VarInt),
+                "passengers": Primitive(Array(
                     length: Prefixed(U32),
-                    type: VarInt,
-                ),
+                    field_type: Integer(VarInt),
+                )),
             },
         ),
         (Client, Play, 76): Struct(
             name: "teams",
             fields: {
-                "team name": String(16),
-                "mode": I8,
-                "action": Enum(
+                "team name": Primitive(String(16)),
+                "mode": Integer(I8),
+                "action": CustomType(Enum(
                     name: "teams_action",
-                    variant: Prefixed(U8),
+                    variant: Integer(U8),
                     variants: {
                         0: Struct(
                             name: "create_team",
                             fields: {
-                                "team_display_name": String(32767),
-                                "friendly_flags": BitFlags(
+                                "team_display_name": Primitive(String(32767)),
+                                "friendly_flags": CustomType(BitFlags(
                                     name: "friendly_flags",
-                                    type: U8,
+                                    field_type: U8,
                                     flags: {
                                         1: "allow_friendly_fire",
                                         2: "can_see_invisible_players_on_same_team",
                                     },
-                                ),
-                                "name_tag_visibility": Enum(
+                                )),
+                                "name_tag_visibility": CustomType(Enum(
                                     name: "name_tag_visibility",
-                                    variant: Prefixed(String(32)),
+                                    variant: Primitive(String(32)),
                                     variants: {
                                         "always": Unit(
                                             name: "always",
@@ -1299,10 +1299,10 @@
                                             name: "never",
                                         ),
                                     },
-                                ),
-                                "collision_rule": Enum(
+                                )),
+                                "collision_rule": CustomType(Enum(
                                     name: "collision_rule",
-                                    variant: Prefixed(String(32)),
+                                    variant: Primitive(String(32)),
                                     variants: {
                                         "always": Unit(
                                             name: "always",
@@ -1317,15 +1317,15 @@
                                             name: "push_own_team",
                                         ),
                                     },
-                                ),
-                                "team_color": VarInt,
-                                "team_prefix": String(32767),
-                                "team_suffix": String(32767),
-                                "entity_count": VarInt,
-                                "entities": Array(
+                                )),
+                                "team_color": Integer(VarInt),
+                                "team_prefix": Primitive(String(32767)),
+                                "team_suffix": Primitive(String(32767)),
+                                "entity_count": Integer(VarInt),
+                                "entities": Primitive(Array(
                                     length: Prefixed(I32),
-                                    type: String(40),
-                                ),
+                                    field_type: Primitive(String(40)),
+                                )),
                             },
                         ),
                         1: Unit(
@@ -1334,18 +1334,18 @@
                         2: Struct(
                             name: "update_team_info",
                             fields: {
-                                "team_display_name": String(32767),
-                                "friendly_flags": BitFlags(
+                                "team_display_name": Primitive(String(32767)),
+                                "friendly_flags": CustomType(BitFlags(
                                     name: "friendly_flags",
-                                    type: U8,
+                                    field_type: U8,
                                     flags: {
                                         1: "allow_friendly_fire",
                                         2: "can_see_invisible_players_on_same_team",
                                     },
-                                ),
-                                "name_tag_visibility": Enum(
+                                )),
+                                "name_tag_visibility": CustomType(Enum(
                                     name: "name_tag_visibility",
-                                    variant: Prefixed(String(32)),
+                                    variant: Primitive(String(32)),
                                     variants: {
                                         "always": Unit(
                                             name: "always",
@@ -1360,10 +1360,10 @@
                                             name: "never",
                                         ),
                                     },
-                                ),
-                                "collision_rule": Enum(
+                                )),
+                                "collision_rule": CustomType(Enum(
                                     name: "collision_rule",
-                                    variant: Prefixed(String(32)),
+                                    variant: Primitive(String(32)),
                                     variants: {
                                         "always": Unit(
                                             name: "always",
@@ -1378,41 +1378,41 @@
                                             name: "push_own_team",
                                         ),
                                     },
-                                ),
-                                "team_color": VarInt,
-                                "team_prefix": String(32767),
-                                "team_suffix": String(32767),
+                                )),
+                                "team_color": Integer(VarInt),
+                                "team_prefix": Primitive(String(32767)),
+                                "team_suffix": Primitive(String(32767)),
                             },
                         ),
                         3: Struct(
                             name: "add_players_to_team",
                             fields: {
-                                "entities": Array(
+                                "entities": Primitive(Array(
                                     length: Prefixed(VarInt),
-                                    type: String(40),
-                                ),
+                                    field_type: Primitive(String(40)),
+                                )),
                             },
                         ),
                         4: Struct(
                             name: "remove_players_from_team",
                             fields: {
-                                "entities": Array(
+                                "entities": Primitive(Array(
                                     length: Prefixed(VarInt),
-                                    type: String(40),
-                                ),
+                                    field_type: Primitive(String(40)),
+                                )),
                             },
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 77): Struct(
             name: "update_score",
             fields: {
-                "entity_name": String(40),
-                "action": Enum(
+                "entity_name": Primitive(String(40)),
+                "action": CustomType(Enum(
                     name: "item_action",
-                    variant: Prefixed(I8),
+                    variant: Integer(I8),
                     variants: {
                         0: Unit(
                             name: "create_or_update",
@@ -1421,55 +1421,55 @@
                             name: "remove",
                         ),
                     },
-                ),
-                "objective_name": String(16),
-                "value": Option(VarInt),
+                )),
+                "objective_name": Primitive(String(16)),
+                "value": Primitive(Option(Integer(VarInt))),
             },
         ),
         (Client, Play, 78): Struct(
             name: "spawn_position",
             fields: {
-                "location": Shared("position"),
+                "location": Primitive(Shared("position")),
             },
         ),
         (Client, Play, 79): Struct(
             name: "time_update",
             fields: {
-                "world_age": I64,
-                "time_of_day": I64,
+                "world_age": Integer(I64),
+                "time_of_day": Integer(I64),
             },
         ),
         (Client, Play, 80): Struct(
             name: "title",
             fields: {
-                "action": Enum(
+                "action": CustomType(Enum(
                     name: "title_action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Struct(
                             name: "set_title",
                             fields: {
-                                "title_text": String(32767),
+                                "title_text": Primitive(String(32767)),
                             },
                         ),
                         1: Struct(
                             name: "set_subtitle",
                             fields: {
-                                "subtitle_text": String(32767),
+                                "subtitle_text": Primitive(String(32767)),
                             },
                         ),
                         2: Struct(
                             name: "set_action_bar",
                             fields: {
-                                "action_bar_text": String(32767),
+                                "action_bar_text": Primitive(String(32767)),
                             },
                         ),
                         3: Struct(
                             name: "set_times_and_display",
                             fields: {
-                                "fade_in": I32,
-                                "stay": I32,
-                                "fade_out": I32,
+                                "fade_in": Integer(I32),
+                                "stay": Integer(I32),
+                                "fade_out": Integer(I32),
                             },
                         ),
                         4: Unit(
@@ -1479,160 +1479,160 @@
                             name: "reset",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 81): Struct(
             name: "entity_sound_effect",
             fields: {
-                "sound_id": VarInt,
-                "sound_category": VarInt,
-                "entity_id": VarInt,
-                "volume": F32,
-                "pitch": F32,
+                "sound_id": Integer(VarInt),
+                "sound_category": Integer(VarInt),
+                "entity_id": Integer(VarInt),
+                "volume": Float(F32),
+                "pitch": Float(F32),
             },
         ),
         (Client, Play, 82): Struct(
             name: "sound_effect",
             fields: {
-                "sound_id": VarInt,
-                "sound_category": VarInt,
-                "effect_position_x": I32,
-                "effect_position_y": I32,
-                "effect_position_z": I32,
-                "volume": F32,
-                "pitch": F32,
+                "sound_id": Integer(VarInt),
+                "sound_category": Integer(VarInt),
+                "effect_position_x": Integer(I32),
+                "effect_position_y": Integer(I32),
+                "effect_position_z": Integer(I32),
+                "volume": Float(F32),
+                "pitch": Float(F32),
             },
         ),
         (Client, Play, 83): Struct(
             name: "stop_sound",
             fields: {
-                "flags": I8,
-                "source": Option(VarInt),
-                "sound": Option(String(32767)),
+                "flags": Integer(I8),
+                "source": Primitive(Option(Integer(VarInt))),
+                "sound": Primitive(Option(Primitive(String(32767)))),
             },
         ),
         (Client, Play, 84): Struct(
             name: "player_list_header_and_footer",
             fields: {
-                "header": String(32767),
-                "footer": String(32767),
+                "header": Primitive(String(32767)),
+                "footer": Primitive(String(32767)),
             },
         ),
         (Client, Play, 85): Struct(
             name: "nbt_query_response",
             fields: {
-                "transaction_id": VarInt,
-                "nbt": Nbt,
+                "transaction_id": Integer(VarInt),
+                "nbt": Primitive(Nbt),
             },
         ),
         (Client, Play, 86): Struct(
             name: "collect_item",
             fields: {
-                "collected_entity_id": VarInt,
-                "collector_entity_id": VarInt,
-                "pickup_item_count": VarInt,
+                "collected_entity_id": Integer(VarInt),
+                "collector_entity_id": Integer(VarInt),
+                "pickup_item_count": Integer(VarInt),
             },
         ),
         (Client, Play, 87): Struct(
             name: "entity_teleport",
             fields: {
-                "entity_id": VarInt,
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "yaw": U8,
-                "pitch": U8,
-                "on_ground": Boolean,
+                "entity_id": Integer(VarInt),
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "yaw": Integer(U8),
+                "pitch": Integer(U8),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Client, Play, 89): Struct(
             name: "entity_properties",
             fields: {
-                "entity_id": VarInt,
-                "property": Array(
+                "entity_id": Integer(VarInt),
+                "property": Primitive(Array(
                     length: Prefixed(I32),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "entity_property",
                         fields: {
-                            "key": String(64),
-                            "value": F64,
-                            "number_of_modifiers": VarInt,
-                            "modifiers": Array(
+                            "key": Primitive(String(64)),
+                            "value": Float(F64),
+                            "number_of_modifiers": Integer(VarInt),
+                            "modifiers": Primitive(Array(
                                 length: Prefixed(VarInt),
-                                type: Struct(
+                                field_type: CustomType(Struct(
                                     name: "entity_modifiers",
                                     fields: {
-                                        "uuid": Uuid,
-                                        "amount": F64,
-                                        "operation": I8,
+                                        "uuid": Primitive(Uuid),
+                                        "amount": Float(F64),
+                                        "operation": Integer(I8),
                                     },
-                                ),
-                            ),
+                                )),
+                            )),
                         },
-                    ),
-                ),
+                    )),
+                )),
             },
         ),
         (Client, Play, 90): Struct(
             name: "entity_effect",
             fields: {
-                "entity_id": VarInt,
-                "effect_id": I8,
-                "amplifier": I8,
-                "duration": VarInt,
-                "flags": BitFlags(
+                "entity_id": Integer(VarInt),
+                "effect_id": Integer(I8),
+                "amplifier": Integer(I8),
+                "duration": Integer(VarInt),
+                "flags": CustomType(BitFlags(
                     name: "entity_effect_flags",
-                    type: I32,
+                    field_type: I32,
                     flags: {
                         1: "is_ambient",
                         2: "show_particles",
                         4: "show_icon",
                     },
-                ),
+                )),
             },
         ),
         (Client, Play, 91): Struct(
             name: "declare_recipes",
             fields: {
-                "recipes": Array(
+                "recipes": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: Struct(
+                    field_type: CustomType(Struct(
                         name: "recipe",
                         fields: {
-                            "recipe_id": String(32767),
-                            "data": Enum(
+                            "recipe_id": Primitive(String(32767)),
+                            "data": CustomType(Enum(
                                 name: "data",
-                                variant: Prefixed(String(32)),
+                                variant: Primitive(String(32)),
                                 variants: {
                                     "crafting_shaped": Struct(
                                         name: "crafting_shaped",
                                         fields: {
-                                            "width": VarInt,
-                                            "height": VarInt,
-                                            "group": String(128),
-                                            "ingredients": Array(
+                                            "width": Integer(VarInt),
+                                            "height": Integer(VarInt),
+                                            "group": Primitive(String(128)),
+                                            "ingredients": Primitive(Array(
                                                 length: Prefixed(VarInt),
-                                                type: Array(
+                                                field_type: Primitive(Array(
                                                     length: Prefixed(VarInt),
-                                                    type: Shared("slot"),
-                                                ),
-                                            ),
-                                            "result": Shared("slot"),
+                                                    field_type: Primitive(Shared("slot")),
+                                                )),
+                                            )),
+                                            "result": Primitive(Shared("slot")),
                                         },
                                     ),
                                     "crafting_shapeless": Struct(
                                         name: "crafting_shapeless",
                                         fields: {
-                                            "group": String(128),
-                                            "ingredients": Array(
+                                            "group": Primitive(String(128)),
+                                            "ingredients": Primitive(Array(
                                                 length: Prefixed(VarInt),
-                                                type: Array(
+                                                field_type: Primitive(Array(
                                                     length: Prefixed(VarInt),
-                                                    type: Shared("slot"),
-                                                ),
-                                            ),
-                                            "result": Shared("slot"),
+                                                    field_type: Primitive(Shared("slot")),
+                                                )),
+                                            )),
+                                            "result": Primitive(Shared("slot")),
                                         },
                                     ),
                                     "crafting_special_armordye": Unit(
@@ -1677,41 +1677,41 @@
                                     "smelting": Struct(
                                         name: "smelting",
                                         fields: {
-                                            "group": String(128),
-                                            "ingredients": Array(
+                                            "group": Primitive(String(128)),
+                                            "ingredients": Primitive(Array(
                                                 length: Prefixed(VarInt),
-                                                type: Shared("slot"),
-                                            ),
-                                            "result": Shared("slot"),
-                                            "experience": F32,
-                                            "cooking_time": VarInt,
+                                                field_type: Primitive(Shared("slot")),
+                                            )),
+                                            "result": Primitive(Shared("slot")),
+                                            "experience": Float(F32),
+                                            "cooking_time": Integer(VarInt),
                                         },
                                     ),
                                 },
-                            ),
+                            )),
                         },
-                    ),
-                ),
+                    )),
+                )),
             },
         ),
         (Client, Play, 92): Struct(
             name: "tags",
             fields: {
-                "block_tags": Shared("tag"),
-                "item_tags": Shared("tag"),
-                "fluid_tags": Shared("tag"),
-                "entity_tags": Shared("tag"),
+                "block_tags": Primitive(Shared("tag")),
+                "item_tags": Primitive(Shared("tag")),
+                "fluid_tags": Primitive(Shared("tag")),
+                "entity_tags": Primitive(Shared("tag")),
             },
         ),
         (Server, Handshaking, 0): Struct(
             name: "handshake",
             fields: {
-                "protocol_version": VarInt,
-                "server_address": String(255),
-                "server_port": U16,
-                "next_state": Enum(
+                "protocol_version": Integer(VarInt),
+                "server_address": Primitive(String(255)),
+                "server_port": Integer(U16),
+                "next_state": CustomType(Enum(
                     name: "state",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         1: Unit(
                             name: "status",
@@ -1720,7 +1720,7 @@
                             name: "login",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Status, 0): Struct(
@@ -1730,58 +1730,58 @@
         (Server, Status, 1): Struct(
             name: "ping",
             fields: {
-                "payload": I64,
+                "payload": Integer(I64),
             },
         ),
         (Server, Login, 0): Struct(
             name: "login_start",
             fields: {
-                "name": String(16),
+                "name": Primitive(String(16)),
             },
         ),
         (Server, Login, 1): Struct(
             name: "encryption_response",
             fields: {
-                "shared_secret": Array(
+                "shared_secret": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: U8,
-                ),
-                "verify_token": Array(
+                    field_type: Integer(U8),
+                )),
+                "verify_token": Primitive(Array(
                     length: Prefixed(VarInt),
-                    type: U8,
-                ),
+                    field_type: Integer(U8),
+                )),
             },
         ),
         (Server, Login, 2): Struct(
             name: "login_plugin_response",
             fields: {
-                "message_id": VarInt,
-                "successful": Boolean,
-                "data": Option(Array(
+                "message_id": Integer(VarInt),
+                "successful": Primitive(Boolean),
+                "data": Primitive(Option(Primitive(Array(
                     length: RemainingLength,
-                    type: U8,
-                )),
+                    field_type: Integer(U8),
+                )))),
             },
         ),
         (Server, Play, 0): Struct(
             name: "teleport_confirm",
             fields: {
-                "teleport_id": VarInt,
+                "teleport_id": Integer(VarInt),
             },
         ),
         (Server, Play, 1): Struct(
             name: "query_block_nbt",
             fields: {
-                "transaction_id": VarInt,
-                "location": Shared("position"),
+                "transaction_id": Integer(VarInt),
+                "location": Primitive(Shared("position")),
             },
         ),
         (Server, Play, 2): Struct(
             name: "set_difficulty",
             fields: {
-                "new_difficulty": Enum(
+                "new_difficulty": CustomType(Enum(
                     name: "difficulty",
-                    variant: Prefixed(I8),
+                    variant: Integer(I8),
                     variants: {
                         0: Unit(
                             name: "peaceful",
@@ -1796,21 +1796,21 @@
                             name: "hard",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 3): Struct(
             name: "chat_message",
             fields: {
-                "message": String(256),
+                "message": Primitive(String(256)),
             },
         ),
         (Server, Play, 4): Struct(
             name: "client_status",
             fields: {
-                "action": Enum(
+                "action": CustomType(Enum(
                     name: "action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "perform_respawn",
@@ -1819,19 +1819,19 @@
                             name: "request_stats",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 5): Struct(
             name: "client_settings",
             fields: {
-                "local": String(16),
-                "view_distance": I8,
-                "chat_mode": VarInt,
-                "chat_colors": Boolean,
-                "displayed_skin_parts": BitFlags(
+                "local": Primitive(String(16)),
+                "view_distance": Integer(I8),
+                "chat_mode": Integer(VarInt),
+                "chat_colors": Primitive(Boolean),
+                "displayed_skin_parts": CustomType(BitFlags(
                     name: "displayed_skin_parts",
-                    type: U8,
+                    field_type: U8,
                     flags: {
                         1: "cape_enabled",
                         2: "jacket_enabled",
@@ -1841,10 +1841,10 @@
                         32: "right_pants_enabled",
                         64: "hat_enabled",
                     },
-                ),
-                "main_hand": Enum(
+                )),
+                "main_hand": CustomType(Enum(
                     name: "main_hand",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "left",
@@ -1853,85 +1853,85 @@
                             name: "right",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 6): Struct(
             name: "tab_complete",
             fields: {
-                "transaction_id": VarInt,
-                "text": String(32500),
+                "transaction_id": Integer(VarInt),
+                "text": Primitive(String(32500)),
             },
         ),
         (Server, Play, 7): Struct(
             name: "window_confirmation",
             fields: {
-                "window_id": I8,
-                "action_number": I16,
-                "accepted": Boolean,
+                "window_id": Integer(I8),
+                "action_number": Integer(I16),
+                "accepted": Primitive(Boolean),
             },
         ),
         (Server, Play, 8): Struct(
             name: "click_window_button",
             fields: {
-                "window_id": I8,
-                "button": I8,
+                "window_id": Integer(I8),
+                "button": Integer(I8),
             },
         ),
         (Server, Play, 9): Struct(
             name: "click_window",
             fields: {
-                "window_id": U8,
-                "slot": I16,
-                "button": I8,
-                "action_number": I16,
-                "mode": VarInt,
-                "clicked_item": Shared("slot"),
+                "window_id": Integer(U8),
+                "slot": Integer(I16),
+                "button": Integer(I8),
+                "action_number": Integer(I16),
+                "mode": Integer(VarInt),
+                "clicked_item": Primitive(Shared("slot")),
             },
         ),
         (Server, Play, 10): Struct(
             name: "close_window",
             fields: {
-                "window_id": U8,
+                "window_id": Integer(U8),
             },
         ),
         (Server, Play, 11): Struct(
             name: "plugin_message",
             fields: {
-                "channel": Shared("identifier"),
-                "data": Array(
+                "channel": Primitive(Shared("identifier")),
+                "data": Primitive(Array(
                     length: RemainingLength,
-                    type: U8,
-                ),
+                    field_type: Integer(U8),
+                )),
             },
         ),
         (Server, Play, 12): Struct(
             name: "edit_book",
             fields: {
-                "new_book": Shared("slot"),
-                "is_signed": Boolean,
-                "hand": Shared("hand"),
+                "new_book": Primitive(Shared("slot")),
+                "is_signed": Primitive(Boolean),
+                "hand": Primitive(Shared("hand")),
             },
         ),
         (Server, Play, 13): Struct(
             name: "entity_nbt_request",
             fields: {
-                "transaction_id": VarInt,
-                "entity_id": Shared("entity_id"),
+                "transaction_id": Integer(VarInt),
+                "entity_id": Primitive(Shared("entity_id")),
             },
         ),
         (Server, Play, 14): Struct(
             name: "interact_entity",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "type": Enum(
+                "entity_id": Primitive(Shared("entity_id")),
+                "type": CustomType(Enum(
                     name: "type",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Struct(
                             name: "interact",
                             fields: {
-                                "hand": Shared("hand"),
+                                "hand": Primitive(Shared("hand")),
                             },
                         ),
                         1: Unit(
@@ -1940,116 +1940,116 @@
                         2: Struct(
                             name: "interact_at",
                             fields: {
-                                "target_x": F32,
-                                "target_y": F32,
-                                "target_z": F32,
-                                "hand": Shared("hand"),
+                                "target_x": Float(F32),
+                                "target_y": Float(F32),
+                                "target_z": Float(F32),
+                                "hand": Primitive(Shared("hand")),
                             },
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 15): Struct(
             name: "keep_alive",
             fields: {
-                "keep_alive_id": I64,
+                "keep_alive_id": Integer(I64),
             },
         ),
         (Server, Play, 16): Struct(
             name: "lock_difficulty",
             fields: {
-                "locked": Boolean,
+                "locked": Primitive(Boolean),
             },
         ),
         (Server, Play, 17): Struct(
             name: "player_position",
             fields: {
-                "x": F64,
-                "feet_y": F64,
-                "z": F64,
-                "on_ground": Boolean,
+                "x": Float(F64),
+                "feet_y": Float(F64),
+                "z": Float(F64),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Server, Play, 18): Struct(
             name: "player_position_and_rotation",
             fields: {
-                "x": F64,
-                "feet_y": F64,
-                "z": F64,
-                "yaw": F32,
-                "pitch": F32,
-                "on_ground": Boolean,
+                "x": Float(F64),
+                "feet_y": Float(F64),
+                "z": Float(F64),
+                "yaw": Float(F32),
+                "pitch": Float(F32),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Server, Play, 19): Struct(
             name: "player_rotation",
             fields: {
-                "yaw": F32,
-                "pitch": F32,
-                "on_ground": Boolean,
+                "yaw": Float(F32),
+                "pitch": Float(F32),
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Server, Play, 20): Struct(
             name: "player_movement",
             fields: {
-                "on_ground": Boolean,
+                "on_ground": Primitive(Boolean),
             },
         ),
         (Server, Play, 21): Struct(
             name: "vehicle_move",
             fields: {
-                "x": F64,
-                "y": F64,
-                "z": F64,
-                "yaw": F32,
-                "pitch": F32,
+                "x": Float(F64),
+                "y": Float(F64),
+                "z": Float(F64),
+                "yaw": Float(F32),
+                "pitch": Float(F32),
             },
         ),
         (Server, Play, 22): Struct(
             name: "steer_boat",
             fields: {
-                "left_paddle_turning": Boolean,
-                "right_paddle_turning": Boolean,
+                "left_paddle_turning": Primitive(Boolean),
+                "right_paddle_turning": Primitive(Boolean),
             },
         ),
         (Server, Play, 23): Struct(
             name: "pick_item",
             fields: {
-                "slot_to_use": VarInt,
+                "slot_to_use": Integer(VarInt),
             },
         ),
         (Server, Play, 24): Struct(
             name: "craft_recipe_request",
             fields: {
-                "window_id": I8,
-                "recipe": Shared("identifier"),
-                "make_all": Boolean,
+                "window_id": Integer(I8),
+                "recipe": Primitive(Shared("identifier")),
+                "make_all": Primitive(Boolean),
             },
         ),
         (Server, Play, 25): Struct(
             name: "player_abilities",
             fields: {
-                "flags": BitFlags(
+                "flags": CustomType(BitFlags(
                     name: "flags",
-                    type: I8,
+                    field_type: I8,
                     flags: {
                         1: "is_creative",
                         2: "is_flying",
                         4: "can_fly",
                         8: "damage_disabled",
                     },
-                ),
-                "flying_speed": F32,
-                "walking_speed": F32,
+                )),
+                "flying_speed": Float(F32),
+                "walking_speed": Float(F32),
             },
         ),
         (Server, Play, 26): Struct(
             name: "player_digging",
             fields: {
-                "status": Enum(
+                "status": CustomType(Enum(
                     name: "status",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "started_digging",
@@ -2073,11 +2073,11 @@
                             name: "swap_item_in_hand",
                         ),
                     },
-                ),
-                "location": Shared("position"),
-                "face": Enum(
+                )),
+                "location": Primitive(Shared("position")),
+                "face": CustomType(Enum(
                     name: "face",
-                    variant: Prefixed(I8),
+                    variant: Integer(I8),
                     variants: {
                         0: Unit(
                             name: "bottom",
@@ -2098,16 +2098,16 @@
                             name: "east",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 27): Struct(
             name: "entity_action",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "action_id": Enum(
+                "entity_id": Primitive(Shared("entity_id")),
+                "action_id": CustomType(Enum(
                     name: "action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "start_sneaking",
@@ -2137,64 +2137,64 @@
                             name: "start_flying_with_elytra",
                         ),
                     },
-                ),
-                "jump_boost": VarInt,
+                )),
+                "jump_boost": Integer(VarInt),
             },
         ),
         (Server, Play, 28): Struct(
             name: "steer_vehicle",
             fields: {
-                "sideways": F32,
-                "forward": F32,
-                "flags": BitFlags(
+                "sideways": Float(F32),
+                "forward": Float(F32),
+                "flags": CustomType(BitFlags(
                     name: "flags",
-                    type: U8,
+                    field_type: U8,
                     flags: {
                         1: "jump",
                         2: "unmount",
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 29): Struct(
             name: "recipe_book_data",
             fields: {
-                "type": Enum(
+                "type": CustomType(Enum(
                     name: "type",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Struct(
                             name: "display_name",
                             fields: {
-                                "recipe_id": Shared("identifier"),
+                                "recipe_id": Primitive(Shared("identifier")),
                             },
                         ),
                         1: Struct(
                             name: "recipe_book_states",
                             fields: {
-                                "crafting_recipe_book_open": Boolean,
-                                "crafting_recipe_filter_active": Boolean,
-                                "smelting_recipe_book_open": Boolean,
-                                "smelting_recipe_filter_active ": Boolean,
+                                "crafting_recipe_book_open": Primitive(Boolean),
+                                "crafting_recipe_filter_active": Primitive(Boolean),
+                                "smelting_recipe_book_open": Primitive(Boolean),
+                                "smelting_recipe_filter_active ": Primitive(Boolean),
                             },
                         ),
                     },
-                ),
-                "blasting_recipe_book_open": Boolean,
-                "blasting_recipe_filter_active": Boolean,
-                "smoking_recipe_book_open ": Boolean,
-                "smoking_recipe_filter_active ": Boolean,
+                )),
+                "blasting_recipe_book_open": Primitive(Boolean),
+                "blasting_recipe_filter_active": Primitive(Boolean),
+                "smoking_recipe_book_open ": Primitive(Boolean),
+                "smoking_recipe_filter_active ": Primitive(Boolean),
             },
         ),
         (Server, Play, 30): Struct(
             name: "name_item",
             fields: {
-                "item_name": String(32767),
+                "item_name": Primitive(String(32767)),
             },
         ),
         (Server, Play, 31): Enum(
             name: "resource_pack_status",
-            variant: Prefixed(VarInt),
+            variant: Integer(VarInt),
             variants: {
                 0: Unit(
                     name: "successfully_loaded",
@@ -2213,50 +2213,50 @@
         (Server, Play, 32): Struct(
             name: "advancement_tab",
             fields: {
-                "action": Enum(
+                "action": CustomType(Enum(
                     name: "action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Struct(
                             name: "opened_tab",
                             fields: {
-                                "tab_id": Shared("identifier"),
+                                "tab_id": Primitive(Shared("identifier")),
                             },
                         ),
                         1: Unit(
                             name: "closen_screen",
                         ),
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 33): Struct(
             name: "select_trade",
             fields: {
-                "selected_slot": VarInt,
+                "selected_slot": Integer(VarInt),
             },
         ),
         (Server, Play, 34): Struct(
             name: "set_beacon_effect",
             fields: {
-                "primary_effect": VarInt,
-                "secondary_effect": VarInt,
+                "primary_effect": Integer(VarInt),
+                "secondary_effect": Integer(VarInt),
             },
         ),
         (Server, Play, 35): Struct(
             name: "held_item_change",
             fields: {
-                "slot": I16,
+                "slot": Integer(I16),
             },
         ),
         (Server, Play, 36): Struct(
             name: "update_command_block",
             fields: {
-                "location": Shared("position"),
-                "command": String(32767),
-                "mode": Enum(
+                "location": Primitive(Shared("position")),
+                "command": Primitive(String(32767)),
+                "mode": CustomType(Enum(
                     name: "mode",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "sequence",
@@ -2268,49 +2268,49 @@
                             name: "redstone",
                         ),
                     },
-                ),
-                "flags": BitFlags(
+                )),
+                "flags": CustomType(BitFlags(
                     name: "flags",
-                    type: I8,
+                    field_type: I8,
                     flags: {
                         1: "track_output",
                         2: "is_conditional",
                         4: "automatic",
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 37): Struct(
             name: "update_command_block_minecraft",
             fields: {
-                "entity_id": Shared("entity_id"),
-                "command": String(0),
-                "tract_output": Boolean,
+                "entity_id": Primitive(Shared("entity_id")),
+                "command": Primitive(String(0)),
+                "tract_output": Primitive(Boolean),
             },
         ),
         (Server, Play, 38): Struct(
             name: "creative_inventory_action",
             fields: {
-                "slot": I16,
-                "clicked_item": Shared("slot"),
+                "slot": Integer(I16),
+                "clicked_item": Primitive(Shared("slot")),
             },
         ),
         (Server, Play, 39): Struct(
             name: "update_jigsaw_block",
             fields: {
-                "location": Shared("position"),
-                "attachment_type": Shared("identifier"),
-                "target_pool": Shared("identifier"),
-                "final_state": String(0),
+                "location": Primitive(Shared("position")),
+                "attachment_type": Primitive(Shared("identifier")),
+                "target_pool": Primitive(Shared("identifier")),
+                "final_state": Primitive(String(0)),
             },
         ),
         (Server, Play, 40): Struct(
             name: "update_structure_block",
             fields: {
-                "location": Shared("postion"),
-                "action": Enum(
+                "location": Primitive(Shared("postion")),
+                "action": CustomType(Enum(
                     name: "action",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "update_data",
@@ -2325,10 +2325,10 @@
                             name: "detect_size",
                         ),
                     },
-                ),
-                "mode": Enum(
+                )),
+                "mode": CustomType(Enum(
                     name: "mode",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "save",
@@ -2343,17 +2343,17 @@
                             name: "data",
                         ),
                     },
-                ),
-                "name": String(0),
-                "offset_x": U8,
-                "offset_y": U8,
-                "offset_z": U8,
-                "size_x": U8,
-                "size_y": U8,
-                "size_z": U8,
-                "mirror": Enum(
+                )),
+                "name": Primitive(String(0)),
+                "offset_x": Integer(U8),
+                "offset_y": Integer(U8),
+                "offset_z": Integer(U8),
+                "size_x": Integer(U8),
+                "size_y": Integer(U8),
+                "size_z": Integer(U8),
+                "mirror": CustomType(Enum(
                     name: "mirror",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "none",
@@ -2365,10 +2365,10 @@
                             name: "front_back",
                         ),
                     },
-                ),
-                "rotation": Enum(
+                )),
+                "rotation": CustomType(Enum(
                     name: "rotation",
-                    variant: Prefixed(VarInt),
+                    variant: Integer(VarInt),
                     variants: {
                         0: Unit(
                             name: "none",
@@ -2383,66 +2383,66 @@
                             name: "counter_clockwise_90",
                         ),
                     },
-                ),
-                "metadata": String(0),
-                "integrity": F32,
-                "seed": VarLong,
-                "flags": BitFlags(
+                )),
+                "metadata": Primitive(String(0)),
+                "integrity": Float(F32),
+                "seed": Integer(VarLong),
+                "flags": CustomType(BitFlags(
                     name: "flags",
-                    type: U8,
+                    field_type: U8,
                     flags: {
                         1: "ignore_entities",
                         2: "show_air",
                         4: "show_bounding_box",
                     },
-                ),
+                )),
             },
         ),
         (Server, Play, 41): Struct(
             name: "update_sign",
             fields: {
-                "location": Shared("position"),
-                "line_1": String(384),
-                "line_2": String(384),
-                "line_3": String(384),
-                "line_4": String(384),
+                "location": Primitive(Shared("position")),
+                "line_1": Primitive(String(384)),
+                "line_2": Primitive(String(384)),
+                "line_3": Primitive(String(384)),
+                "line_4": Primitive(String(384)),
             },
         ),
         (Server, Play, 42): Struct(
             name: "animation",
             fields: {
-                "hand": Shared("hand"),
+                "hand": Primitive(Shared("hand")),
             },
         ),
         (Server, Play, 43): Struct(
             name: "spectate",
             fields: {
-                "target_player": Uuid,
+                "target_player": Primitive(Uuid),
             },
         ),
         (Server, Play, 44): Struct(
             name: "player_block_placement",
             fields: {
-                "hand": Shared("hand"),
-                "location": Shared("position"),
-                "face": Shared("face"),
-                "cursor_position_x": F32,
-                "cursor_position_y": F32,
-                "cursor_position_z": F32,
-                "inside_block": Boolean,
+                "hand": Primitive(Shared("hand")),
+                "location": Primitive(Shared("position")),
+                "face": Primitive(Shared("face")),
+                "cursor_position_x": Float(F32),
+                "cursor_position_y": Float(F32),
+                "cursor_position_z": Float(F32),
+                "inside_block": Primitive(Boolean),
             },
         ),
         (Server, Play, 45): Struct(
             name: "use_item",
             fields: {
-                "hand": Shared("hand"),
+                "hand": Primitive(Shared("hand")),
             },
         ),
     },
     shared_types: [
         Enum(
             name: "dimension",
-            variant: Prefixed(I32),
+            variant: Integer(I32),
             variants: {
                 -1: Unit(
                     name: "nether",
@@ -2457,7 +2457,7 @@
         ),
         Enum(
             name: "face",
-            variant: Prefixed(VarInt),
+            variant: Integer(VarInt),
             variants: {
                 0: Unit(
                     name: "bottom",
@@ -2481,7 +2481,7 @@
         ),
         Enum(
             name: "feet_eyes",
-            variant: Prefixed(VarInt),
+            variant: Integer(VarInt),
             variants: {
                 0: Unit(
                     name: "feet",
@@ -2493,7 +2493,7 @@
         ),
         Enum(
             name: "gamemode",
-            variant: Prefixed(U8),
+            variant: Integer(U8),
             variants: {
                 0: Unit(
                     name: "survival",
@@ -2520,7 +2520,7 @@
         ),
         Enum(
             name: "hand",
-            variant: Prefixed(VarInt),
+            variant: Integer(VarInt),
             variants: {
                 0: Unit(
                     name: "main_hand",
@@ -2540,7 +2540,7 @@
         ),
         Enum(
             name: "slot",
-            variant: Prefixed(Boolean),
+            variant: Primitive(Boolean),
             variants: {
                 false: Unit(
                     name: "empty",
@@ -2548,9 +2548,9 @@
                 true: Struct(
                     name: "item",
                     fields: {
-                        "id": VarInt,
-                        "count": VarInt,
-                        "nbt": Nbt,
+                        "id": Integer(VarInt),
+                        "count": Integer(VarInt),
+                        "nbt": Primitive(Nbt),
                     },
                 ),
             },

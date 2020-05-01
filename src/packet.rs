@@ -32,8 +32,8 @@ pub use direction::Direction;
 pub use stage::Stage;
 
 pub trait PacketEnum<D: Direction, S: Stage> {
-    fn packet_id(&self) -> u64;
-    fn packet_name(&self) -> &'static str;
+    fn id(&self) -> u64;
+    fn name(&self) -> &'static str;
 }
 
 /// Represents a packet.

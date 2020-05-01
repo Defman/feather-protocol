@@ -16,3 +16,7 @@ bitflags = "1.2"
 
 [workspace]
 members = [".", "codegen", "codegen-proc", "spec", "extractor"]
+
+# [patch.crates-io]
+# serde = { git = "https://github.com/killercup/serde", branch = "verbose-debug" }
+# serde_derive = { git = "https://github.com/killercup/serde", branch = "verbose-debug" }
